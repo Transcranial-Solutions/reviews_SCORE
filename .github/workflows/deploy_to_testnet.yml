@@ -24,4 +24,6 @@ jobs:
           keystore: ${{ secrets.TESTNET_KEYSTORE }}
           pw: ${{ secrets.TESTNET_KEYSTORE_PW }}
           address: ${{ secrets.TESTNET_SCORE_ADDRESS }}
-        run: tbears deploy -u https://bicon.net.solidwallet.io/api/v3 -m update reviews -k $keystore -p $pw
+        run: |
+          echo $keystore > keystore
+          tbears deploy -u https://bicon.net.solidwallet.io/api/v3 -m update reviews -k keystore -p $pw
