@@ -17,4 +17,4 @@ class Reviews(IconScoreBase):
     @external(readonly=True)
     def hello(self) -> str:
         Logger.debug(f'Hello, world!', TAG)
-        return "Goodbye"
+        return "Hello"
