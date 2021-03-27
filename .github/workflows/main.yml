@@ -26,6 +26,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - name: tbears test
-        run: tbears test reviews |& tee /dev/stderr | grep -c "OK"
+        run: tbears test reviews 2>&1 | tee out.log && cat out.log | grep -c "FAILED"
+
       
       
