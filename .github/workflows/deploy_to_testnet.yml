@@ -21,9 +21,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: tbears deploy to testnet
         env:
-          keystore: ${{ secrets.TESTNET_KEYSTORE }}
           pw: ${{ secrets.TESTNET_KEYSTORE_PW }}
-          address: ${{ secrets.TESTNET_SCORE_ADDRESS }}
+          private_key: ${{ secrets.TESTNET_PRIVATE_KEY }}
         run: |
-          echo $keystore > keystore
+          python -c "import os;from iconsdk.wallet.wallet import KeyWallet;KeyWallet.load(bytes.fromhex(os.getenv('private_key')).store('keystore', os.getenv('pw')"
           tbears deploy -u https://bicon.net.solidwallet.io/api/v3 -m update reviews -k keystore -p $pw
