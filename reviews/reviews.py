@@ -77,7 +77,8 @@ class Reviews(IconScoreBase):
         Check if the sender of this transcation ha atleast {delegation_treshgold}
         delegated. Returns False if beneath threshold or True if above threshold.
         """
-        delegation = self._system_interface.getDelegation(self.msg.sender)
+        delegation = self._system_interface.getDelegation(self.msg.sender)[
+            'totalDelegated']
         delegation_threshhold = self._delegation_threshold.get()
         if delegation < delegation_threshhold:
             return False
