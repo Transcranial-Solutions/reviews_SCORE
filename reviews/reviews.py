@@ -1,7 +1,9 @@
 from iconservice import IconScoreBase, VarDB, Logger, IconScoreDatabase, external, Address, revert, payable, DictDB, sha_256
-from .constants import SYSTEM_SCORE_ADDRESS, TRANSCRANIAL_SOLUTIONS_ADDRESS
+from .scorelib.constants import SYSTEM_SCORE_ADDRESS, TRANSCRANIAL_SOLUTIONS_ADDRESS
+from .scorelib.linked_list import LinkedListDB
 from .interface import SystemScoreInterface
 from .checks import only_owner
+from .review_handler import ReviewHandler
 
 TAG = 'Reviews'
 
@@ -15,21 +17,9 @@ class Reviews(IconScoreBase):
         self._delegation_threshold = VarDB('_delegation_threshhold', db, int)
         self._duration_per_icx = VarDB('_duration_per_icx', db, int)
 
-        # Need these to loop.
-        self._active_review_count = VarDB(
-            '_active_review_count', db, value_type=int)
-        self._index_to_guid = DictDB('_index_to_guid', db, value_type=int)
-        self._guid_to_index = DictDB('_guid_to_index', db, value_type=int)
-
-        # Store reviewdata and keep track of delegations and staking.
-        self._review_hash = DictDB('_review_hash', db, value_type=str)
-        self._start_block = DictDB('_start_block', db, value_type=int)
-        self._expiration_time = DictDB('_expiration_time', db, value_type=int)
-        self._reviewer_address = DictDB(
-            '_reviewer_address', db, value_type=Address)
-        self._delegated_icx = DictDB(
-            '_delegated_icx', db, value_type=int)  # In loop?
-        self._delegated_to = DictDB('_delegated_to', db, value_type=Address)
+        # Reviews, delegations and payout.
+        self._review_handler = ReviewHandler('_review_handler', db)
+        self._payout_queue = LinkedListDB('_payout_queue', db, value_type=str)
 
         # System score interface.
         self._system_interface = IconScoreBase.create_interface_score(
@@ -68,7 +58,7 @@ class Reviews(IconScoreBase):
         params:
             guid           - unique identifier of the review.
             review_score   - score from 0-5.
-            review_message - review text. 
+            review_message - review text.
             prep           - Address of the reviewd P-rep.
         """
         if not self._sender_has_enough_delegation():
@@ -87,13 +77,31 @@ class Reviews(IconScoreBase):
         self._system_interface.setStake(self.msg.value)
         self._system_interface.setDelegation(delegation)
 
-        # Store review and delegation data associated with this guid.
-        self._review_hash[guid] = self._compute_review_hash(
-            guid, review_message, review_score, self._compute_review_expiration(), prep, self.msg.sender)
-        self._delegated_icx[guid] = self.msg.value
-        self._delegated_to[guid] = delegation[0]['address']
-        self._reviewer_address = self.msg.sender
-        self._expiration_time = self._compute_review_expiration()
+        # TODO Store review and delegation data associated with this guid.
+
+    @external
+    def remove_expired_reviews(self) -> None:
+        """
+        Loop through all reviews and check for expired reviews. Remove expired
+        reviews. Undelegate, unstake, and add entry to to payout queue.
+        """
+        pass
+
+    @external
+    def payout_unstaked_icx(self) -> None:
+        """
+        Takes items from the payout queue (one at a time), check if there is enough balance in 
+        contract for the payout. If there is enough balace for payout, it is sent
+        and the entry is deleted from the queue.
+        """
+        pass
+
+    @external
+    def claim_rewards_and_delagate(self) -> None:
+        """
+        Claim iscore and delegate all additional rewards to Transcranial Solutions P-rep.
+        """
+        pass
 
 
 # ==================== Util ====================
