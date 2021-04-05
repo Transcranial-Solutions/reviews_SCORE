@@ -78,6 +78,10 @@ class Reviews(IconScoreBase):
         self._system_interface.setDelegation(delegation)
 
         # TODO Store review and delegation data associated with this guid.
+        expiration = self._compute_review_expiration()
+        review_hash = self._compute_review_hash(
+            guid, review_message, review_score, expiration, prep, self.msg.sender)
+        self._review_handler.add_review(guid, review_hash, expiration)
 
     @external
     def remove_expired_reviews(self) -> None:
@@ -105,6 +109,7 @@ class Reviews(IconScoreBase):
 
 
 # ==================== Util ====================
+
 
     def _sender_has_enough_delegation(self) -> bool:
         """
