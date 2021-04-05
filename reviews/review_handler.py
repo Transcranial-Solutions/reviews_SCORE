@@ -6,16 +6,16 @@ from .scorelib.bag import *
 
 class _Review:
     """
-    This is an internal structure of the class ReviewHandler. It
-    Should not be used outside of that class.
+    This is an internal structure of the class ReviewHandler. Reviews should not
+    be created outside of the ReviewHandler class. Setting properties and deleting
+    Reviews is fine if a review is retrieved using the ReviewHandler class.
     """
 
     NAME = '_review'
 
     def __init__(self, var_key: str, db: IconScoreDatabase) -> None:
         self._name = var_key + _Review.NAME
-        self._key_stored = VarDB(
-            f'{self._name}_key_stored', db, value_type=str)
+        self._handler_db = None
         self._guid = VarDB(
             f'{self._name}_guid', db, value_type=int)
         self._review_hash = VarDB(
@@ -35,6 +35,9 @@ class _Review:
     def set_guid(self, guid: int) -> int:
         self._guid.set(guid)
 
+    def set_handler_db(self, bag: BagDB) -> None:
+        self._handler_db = bag
+
     def set_review_hash(self, hash: str) -> None:
         self._review_hash.set(hash)
 
@@ -51,6 +54,7 @@ class _Review:
         self._guid.remove()
         self._review_hash.remove()
         self._expiration.remove()
+        self._handler_db.remove(self._guid)
 
 
 class ReviewHandler:
@@ -59,36 +63,26 @@ class ReviewHandler:
 
     def __init__(self, var_key: str, db: IconScoreDatabase) -> None:
         self._name = var_key + ReviewHandler.NAME
-        self._review_guids = BagDB(
-            f'{self._name}_review_guids', db, value_type=int)
+        self._review_ids = BagDB(
+            f'{self._name}_review_ids', db, value_type=int)
         self._db = db
 
-    def _get_review(self, guid: str) -> _Review:
+    def get_review(self, guid: int) -> _Review:
         return _Review(guid, self._db)
 
-    def add_review(self, guid, review_hash: str, expiration: int) -> None:
-        review = self._get_review(guid)
+    def get_reviews(self, guids: list) -> list:
+        reviews = []
+        for id in self._review_ids:
+            reviews.append(self.get_review(id))
+
+    def add_review(self, guid: int, review_hash: str, expiration: int) -> None:
+        review = self.get_review(guid)
         review.set_guid(guid)
         review.set_review_hash(review_hash)
         review.set_expiration(expiration)
-        self._review_guids.add(guid)
-
-    def remove_review(self, guid) -> None:
-        review = self._get_review(guid)
-        del review
-        self._review_guids.remove(guid)
-
-    def get_expired_review_ids(self, current_time: int) -> list:
-        expired_reviews = []
-        for guid in self._review_guids:
-            review = self._get_review(guid)
-            if review.has_expired(current_time):
-                expired_reviews.append(guid)
-        return expired_reviews
-
-    def remove_reviews(self, guids: list) -> None:
-        for guid in guids:
-            self.remove_review(guid)
+        review.set_handler_db(self._review_ids)
+        self._review_ids.add(guid)
 
     def __iter__(self) -> None:
-        raise NotImplementedError
+        for id in self._review_ids:
+            yield self.get_review(id)
