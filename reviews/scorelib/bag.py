@@ -15,7 +15,7 @@
 # limitations under the License.
 
 from iconservice import *
-from .consts import *
+from .constants import *
 
 
 class ItemNotFound(Exception):
