@@ -16,12 +16,12 @@ class _Review:
     def __init__(self, var_key: str, db: IconScoreDatabase) -> None:
         self._name = var_key + _Review.NAME
         self._handler_db = None
-        self._guid = VarDB(
-            f'{self._name}_guid', db, value_type=int)
-        self._review_hash = VarDB(
-            f'{self._name}_review_hash', db, value_type=str)
-        self._expiration = VarDB(
-            f'{self._name}_expiration', db, value_type=int)
+        self._guid = VarDB(f'{self._name}_guid', db, value_type=int)
+        self._review_hash = VarDB(f'{self._name}_review_hash', db, value_type=str)
+        self._expiration = VarDB(f'{self._name}_expiration', db, value_type=int)
+        self._reviewer = VarDB(f'{self._name}_expiration', db, value_type=int)
+        self._delegation = VarDB(f'{self._name}_reviewer', db, value_type=Address)
+        self._staking_rewards = VarDB(f'{self._name}_staking_rewards', db, value_type=int)
 
     def get_review_guid(self) -> int:
         return self._guid.get()
@@ -32,17 +32,37 @@ class _Review:
     def get_expiration(self) -> int:
         return self._expiration.get()
 
-    def set_guid(self, guid: int) -> int:
+    def get_reviewer(self) -> Address:
+        return self._reviewer.get()
+
+    def get_delegation(self) -> int:
+        return self._delegation.get()
+
+    def get_staking_rewards(self) -> int:
+        return self._staking_rewards.get()
+
+    def _set_guid(self, guid: int) -> int:
         self._guid.set(guid)
 
-    def set_handler_db(self, bag: BagDB) -> None:
+    def _set_handler_db(self, bag: BagDB) -> None:
         self._handler_db = bag
 
-    def set_review_hash(self, hash: str) -> None:
+    def _set_review_hash(self, hash: str) -> None:
         self._review_hash.set(hash)
 
-    def set_expiration(self, expiration: int) -> None:
+    def _set_expiration(self, expiration: int) -> None:
         self._expiration.set(expiration)
+
+    def _set_reviewer(self, reviewer: Address) -> None:
+        return self._reviewer.set(reviewer)
+    
+    def _set_delegation(self, delegation: int) -> None:
+        self._expiration.set(delegation)
+
+    def set_staking_rewards(self, staking_rewards: int) -> None:
+        self._expiration.set(staking_rewards)
+
+    
 
     def has_expired(self, current_time: int) -> bool:
         if current_time > self.get_expiration():
@@ -54,6 +74,9 @@ class _Review:
         self._guid.remove()
         self._review_hash.remove()
         self._expiration.remove()
+        self._reviewer.remove()
+        self._delegation.remove()
+        self._staking_rewards.remove()
         self._handler_db.remove(self._guid)
 
 
@@ -75,12 +98,17 @@ class ReviewHandler:
         for id in self._review_ids:
             reviews.append(self.get_review(id))
 
-    def add_review(self, guid: int, review_hash: str, expiration: int) -> None:
+    def add_review(
+        self, guid: int, review_hash: str, expiration: int,
+        reviewer: Address, delegation: int, staking_rewards: int = 0) -> None:
         review = self.get_review(guid)
-        review.set_guid(guid)
-        review.set_review_hash(review_hash)
-        review.set_expiration(expiration)
-        review.set_handler_db(self._review_ids)
+        review._set_guid(guid)
+        review._set_review_hash(review_hash)
+        review._set_expiration(expiration)
+        review._set_reviewer(reviewer)
+        review._set_delegation(delegation)
+        review.set_staking_rewards(staking_rewards)
+        review._set_handler_db(self._review_ids)
         self._review_ids.add(guid)
 
     def __iter__(self) -> None:
