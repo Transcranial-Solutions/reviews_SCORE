@@ -1,4 +1,4 @@
-from iconservice import IconScoreBase, VarDB, Logger, IconScoreDatabase, external, Address, revert, payable, DictDB, sha_256
+from iconservice import json_dumps, IconScoreBase, VarDB, Logger, IconScoreDatabase, external, Address, revert, payable, DictDB, sha_256
 from .scorelib.constants import SYSTEM_SCORE_ADDRESS, TRANSCRANIAL_SOLUTIONS_ADDRESS
 from .scorelib.linked_list import LinkedListDB
 from .interface import SystemScoreInterface
@@ -83,7 +83,28 @@ class Reviews(IconScoreBase, SystemScoreInterface):
         Loop through all reviews and check for expired reviews. Remove expired
         reviews. Undelegate, unstake, and add entry to to payout queue.
         """
-        pass
+        current_time = self.now()
+        total_payout = 0
+        for review in self._review_handler:
+            if review.has_expired(current_time):
+                payout = review.get_delegation() + review.get_staking_rewards()
+                payout_entry = {
+                    "address": review.get_reviewer(),
+                    "value": payout
+                }
+
+                self._payout_queue.prepend(json_dumps(payout_entry))
+                total_payout += payout
+                del review
+
+        # Stake and delegate.
+        new_stake_amount = self._system_interface.getStake(self.address) - total_payout
+        new_delegation_amount = self._system_interface.getDelegation(self.msg.sender)[
+            'totalDelegated'] - total_payout    
+        new_delegation = [{'address': TRANSCRANIAL_SOLUTIONS_ADDRESS, 'value': new_delegation_amount}]
+        self._system_interface.setStake(new_stake_amount)
+        self._system_interface.setDelegation(new_delegation)
+  
 
     @external
     def payout_unstaked_icx(self) -> None:
@@ -117,6 +138,7 @@ class Reviews(IconScoreBase, SystemScoreInterface):
             return False
         else:
             return True
+
 
     def _compute_review_expiration(self) -> int:
         """
