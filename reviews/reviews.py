@@ -8,7 +8,7 @@ from .review_handler import ReviewHandler
 TAG = 'Reviews'
 
 
-class Reviews(IconScoreBase):
+class Reviews(IconScoreBase, SystemScoreInterface):
 
     def __init__(self, db: IconScoreDatabase) -> None:
         super().__init__(db)
@@ -32,11 +32,6 @@ class Reviews(IconScoreBase):
         super().on_update()
 
 # =============== Contract settings ===============
-
-    @only_owner
-    @external()
-    def set_bad_review_threshold(self, threshold: int) -> None:
-        self._bad_review_threshold.set(threshold)
 
     @only_owner
     @external()
@@ -66,22 +61,21 @@ class Reviews(IconScoreBase):
                 'In order to leave a review the reviewing address must '
                 f'have atleast {self._delegation_threshold.get()} icx delegated.')
 
-        # P-rep delegation depends on review score.
-        if review_score >= self._bad_review_threshold.get():
-            delegation = [{"address": prep, "value": self.msg.value}]
-        else:
-            delegation = [
-                {"address": TRANSCRANIAL_SOLUTIONS_ADDRESS, "value": self.msg.value}]
-
         # Stake and delegate.
-        self._system_interface.setStake(self.msg.value)
-        self._system_interface.setDelegation(delegation)
+        new_stake = self._system_interface.getStake(self.address) + self.msg.value
+        new_delegation_amount = self._system_interface.getDelegation(self.msg.sender)[
+            'totalDelegated'] + self.msg.value    
+        new_delegation = [{'address': TRANSCRANIAL_SOLUTIONS_ADDRESS, 'value': new_delegation_amount}]
+        self._system_interface.setStake(new_stake)
+        self._system_interface.setDelegation(new_delegation)
 
-        # TODO Store review and delegation data associated with this guid.
+        # Store review and delegation data associated with this guid.
         expiration = self._compute_review_expiration()
         review_hash = self._compute_review_hash(
             guid, review_message, review_score, expiration, prep, self.msg.sender)
-        self._review_handler.add_review(guid, review_hash, expiration)
+        self._review_handler.add_review(
+            guid, review_hash, expiration, reviewer=self.msg.sender,
+            delegation=self.msg.value, staking_rewards=0)
 
     @external
     def remove_expired_reviews(self) -> None:
