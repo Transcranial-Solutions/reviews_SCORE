@@ -8,5 +8,5 @@ class TestReviews(ScoreTestCase):
         super().setUp()
         self.score = self.get_score_instance(Reviews, self.test_account1)
 
-    def test_hello(self):
-        self.assertEqual(self.score.hello(), "Hello")
+    #def test_hello(self):
+    #    self.assertEqual(self.score.hello(), "Hello")
