@@ -14,7 +14,11 @@ class Staking(IconScoreBase):
     def on_update(self) -> None:
         super().on_update()
     
-    @external(readonly=True)
-    def hello(self) -> str:
-        Logger.debug(f'Hello, world!', TAG)
-        return "Hello"
+    
+    @eventlog
+    def test_eventlog(self, param1: int, param2: str, param3: Address, param4: bool, param5: int):
+        pass
+    
+    @external
+    def test_eventlog(self, param1: int, param2: str, param3: Address, param4: bool, param5: int):
+        pass
