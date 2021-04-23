@@ -21,4 +21,4 @@ class Staking(IconScoreBase):
     
     @external
     def test_eventlog(self, param1: int, param2: str, param3: Address, param4: bool, param5: int):
-        self.Test_eventlog()
+        self.Test_eventlog(param1, param2, param3, param4, param5)
