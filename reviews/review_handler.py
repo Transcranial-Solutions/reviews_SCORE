@@ -55,15 +55,14 @@ class _Review:
         # Reviewhandler and score instance.
         self._score = review_handler._score
         self._review_handler = review_handler
-        self._db = review_handler._db
 
         # DB interface for review properties.
-        self._guid = VarDB(f'{self._name}_guid', self._db, value_type=int)
-        self._hash = VarDB(f'{self._name}_hash', self._db, value_type=str)
-        self._reviewer = VarDB(f'{self._name}_expiration', self._db, value_type=Address)
-        self._stake = VarDB(f'{self._name}_stake', self._db, value_type=str)
-        self._submission = VarDB(f'{self._name}_submission', self._db, value_type=int)
-        self._expiration = VarDB(f'{self._name}_expiration', self._db, value_type=int)
+        self._guid = VarDB(f'{self._name}_guid', review_handler._db, value_type=int)
+        self._hash = VarDB(f'{self._name}_hash', review_handler._db, value_type=str)
+        self._reviewer = VarDB(f'{self._name}_expiration', review_handler._db, value_type=Address)
+        self._stake = VarDB(f'{self._name}_stake', review_handler._db, value_type=str)
+        self._submission = VarDB(f'{self._name}_submission', review_handler._db, value_type=int)
+        self._expiration = VarDB(f'{self._name}_expiration', review_handler._db, value_type=int)
 
     @property
     def guid(self) -> int:
