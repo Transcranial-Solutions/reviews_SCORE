@@ -7,7 +7,6 @@ class KeyDB:
 
     _NAME = '_KeyDB'
 
-
     def __init__(self, var_key: str, db: IconScoreDatabase, value_type: type):
         self._name = var_key + KeyDB._NAME
         self._index_to_key = DictDB(f'{self._name}_index_to_key', db, value_type = type)
@@ -32,7 +31,6 @@ class KeyDB:
         self._index_to_key[next_index] = key
         self._key_to_index[key]
         self._key_count.set(next_index)
-
 
     def remove_key(self, key) -> None:
         """
