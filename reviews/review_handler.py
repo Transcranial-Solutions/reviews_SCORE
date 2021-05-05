@@ -1,5 +1,5 @@
 from iconservice import IconScoreBase, IconScoreDatabase, VarDB, Address
-from .scorelib.bag import BagDB
+from .keydb import KeyDB
 
 
 class ReviewHandler:
@@ -11,7 +11,7 @@ class ReviewHandler:
 
     def __init__(self, var_key: str, db: IconScoreDatabase, score = IconScoreBase) -> None:
         self._name = var_key + ReviewHandler.NAME
-        self._guids = BagDB(f'{self._name}_guids', db, value_type=int)
+        self._guids = KeyDB(f'{self._name}_guids', db, value_type=int)
         self._db = db
         self._score = score
 
@@ -23,7 +23,7 @@ class ReviewHandler:
         review._submission.set(self._score.now())
         review._expiration.set(expiration)
         review._review_handler = self
-        self._guids.add(guid)
+        self._guids.add_key(guid)
 
     def remove_review(self, guid: int) -> None:
         review = _Review(guid, self)
@@ -105,4 +105,4 @@ class _Review:
         self._reviewer.remove()
         self._submission.remove()
         self._expiration.remove()
-        self._review_handler._guids.remove(self.guid)
+        self._review_handler._guids.remove_key(self.guid)
