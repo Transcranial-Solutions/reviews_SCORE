@@ -5,7 +5,7 @@ from iconservice import (
 
 from .review_handler import ReviewHandler
 from .interfaces.staking_score import StakingScoreInterface
-from .scorelib.checks import only_owner
+
 
 TAG = 'Reviews'
 
@@ -23,7 +23,7 @@ class Reviews(IconScoreBase):
         super().on_update()
 
     # ========  Settings ========
-    @only_owner
+   
     @external()
     def set_staking_score(self, score: Address) -> None:
         self._staking_score.set(score)
