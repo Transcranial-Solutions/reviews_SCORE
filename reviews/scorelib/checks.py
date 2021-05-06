@@ -69,7 +69,7 @@ def catch_error(func):
         try:
             return func(self, *args, **kwargs)
         except BaseException as e:
-            Logger.error(repr(e), TAG)
+            Logger.error(repr(e))
             try:
                 # readonly methods cannot emit eventlogs
                 self.ShowException(repr(e))
