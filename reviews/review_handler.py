@@ -1,4 +1,4 @@
-from iconservice import IconScoreBase, IconScoreDatabase, VarDB, Address
+from iconservice import IconScoreBase, IconScoreDatabase, VarDB, Address, json_dumps
 from .scorelib.keydb import KeyDB
 
 
@@ -37,6 +37,14 @@ class ReviewHandler:
         for guid in self._guids:
             reviews.append(self.get_review(guid))
         return reviews
+
+    ## For testing.
+    def get_all_reviews(self) -> list:
+        guids = []
+        for guid in self._guids:
+            guids.append(guid)
+        return self.get_reviews(guids)
+
 
 class _Review:
     """
@@ -97,6 +105,17 @@ class _Review:
             return True
         else:
             return False
+    
+    def to_json(self) -> str:
+        rev_dict = {
+            'guid': self.guid,
+            'hash': self.hash,
+            'reviewer': self.reviewer,
+            'stake': self.stake,
+            'submission': self.submission,
+            'expiration': self.expiration
+        }
+        return json_dumps(rev_dict)
 
     def __del__(self) -> None:
         self._guid.remove()

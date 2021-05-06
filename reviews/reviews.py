@@ -1,6 +1,6 @@
 from iconservice import (
     IconScoreBase, IconScoreDatabase, DictDB, external, 
-    payable, Address, sha_256, revert, VarDB, isfunction
+    payable, Address, sha_256, revert, VarDB
 )
 
 from .review_handler import ReviewHandler
@@ -23,7 +23,6 @@ class Reviews(IconScoreBase):
         super().on_update()
 
     # ========  Settings ========
-   
     @external()
     def set_staking_score(self, score: Address) -> None:
         self._staking_score.set(score)
@@ -75,6 +74,13 @@ class Reviews(IconScoreBase):
             return True
         else:
             return False
+
+    ## For testing.
+    @external(readonly=True)
+    def get_all_reviews(self) -> list:
+        reviews = self._review_handler.get_all_reviews()
+        reviews = [review.to_json() for review in reviews]
+        return reviews
 
     # ========  Helpers =========
 
