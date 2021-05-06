@@ -1,7 +1,7 @@
 from iconservice import (
     IconScoreBase, IconScoreDatabase, DictDB, external, 
     payable, Address, sha_256, revert, VarDB, json_loads, 
-    json_dumps, sha3_256, create_address_with_key
+    json_dumps, sha3_256, create_address_with_key, recover_key
 )
 
 from .review_handler import ReviewHandler
