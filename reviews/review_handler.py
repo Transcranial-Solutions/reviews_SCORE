@@ -1,5 +1,5 @@
 from iconservice import IconScoreBase, IconScoreDatabase, VarDB, Address
-from .keydb import KeyDB
+from .scorelib.keydb import KeyDB
 
 
 class ReviewHandler:
