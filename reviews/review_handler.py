@@ -109,7 +109,7 @@ class _Review:
         rev_dict = {
             'guid': self.guid,
             'hash': self.hash,
-            'reviewer': self.reviewer,
+            'reviewer': self._reviewer.get(),
             'stake': self.stake,
             'submission': self.submission,
             'expiration': self.expiration
