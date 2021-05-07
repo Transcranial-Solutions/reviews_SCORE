@@ -16,7 +16,7 @@ class ReviewHandler:
     def create_review(self, guid: int, hash: str, expiration: int, reviewer: Address, stake: int) -> None:
         review = _Review(guid, self._db, self)
         review._guid.set(guid)
-        review._hash.set(hash)
+        review.hash = hash
         review._stake.set(stake)
         review._submission.set(self._score.now())
         review._expiration.set(expiration)
