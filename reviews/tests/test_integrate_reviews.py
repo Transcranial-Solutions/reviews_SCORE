@@ -1,12 +1,16 @@
 import os
 
 from iconsdk.builder.call_builder import CallBuilder
-from iconsdk.builder.transaction_builder import DeployTransactionBuilder
+from iconsdk.builder.transaction_builder import (
+    DeployTransactionBuilder,
+    CallTransactionBuilder,
+)
 from iconsdk.libs.in_memory_zip import gen_deploy_data_content
 from iconsdk.signed_transaction import SignedTransaction
 from tbears.libs.icon_integrate_test import IconIntegrateTestBase, SCORE_INSTALL_ADDRESS
 
 DIR_PATH = os.path.abspath(os.path.dirname(__file__))
+STAKING_SCORE_INSTALL_ADDRESS = "cx1000000000000000000000000000000000000000"
 
 
 class TestTest(IconIntegrateTestBase):
@@ -25,6 +29,7 @@ class TestTest(IconIntegrateTestBase):
         # self.icon_service = IconService(HTTPProvider(self.TEST_HTTP_ENDPOINT_URI_V3))
 
         # install SCORE
+
         self._score_address = self._deploy_score()["scoreAddress"]
         self._staking_score_address = self._deploy_staking_score()["scoreAddress"]
 
@@ -53,11 +58,8 @@ class TestTest(IconIntegrateTestBase):
 
         return tx_result
 
-    def _deploy_staking_score(
-        self, to: str = "cx1000000000000000000000000000000000000000"
-    ) -> dict:
+    def _deploy_staking_score(self, to: str = STAKING_SCORE_INSTALL_ADDRESS) -> dict:
         staking_dir = os.path.abspath(os.path.join(DIR_PATH, "../../staking"))
-        print(staking_dir)
         transaction = (
             DeployTransactionBuilder()
             .from_(self._test1.get_address())
@@ -89,18 +91,20 @@ class TestTest(IconIntegrateTestBase):
 
         self.assertEqual(self._staking_score_address, tx_result["scoreAddress"])
 
-    # def test_set_staking_score(self):
-    #     # Generates a call instance using the CallBuilder
-    #     call = (
-    #         CallBuilder()
-    #         .from_(self._test1.get_address())
-    #         .to(self._score_address)
-    #         .method("set_staking_score")
-    #         .params({"score": "rawr"})
-    #         .build()
-    #     )
+    def test_set_staking_score(self):
+        call = (
+            CallTransactionBuilder()
+            .from_(self._test1.get_address())
+            .to(self._score_address)
+            .step_limit(100_000_000)
+            .nid(3)
+            .nonce(100)
+            .method("set_staking_score")
+            .params({"score": STAKING_SCORE_INSTALL_ADDRESS})
+            .build()
+        )
 
-    #     # Sends the call request
-    #     response = self.process_call(call, self.icon_service)
+        signed_trans = SignedTransaction(call, self._test1)
+        response = self.process_transaction(signed_trans, self.icon_service)
 
-    #     self.assertEqual("Hello", response)
+        self.assertEqual(True, response["status"])
