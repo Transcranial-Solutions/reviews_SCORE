@@ -104,7 +104,7 @@ class _Review:
         else:
             return False
     
-    def to_json(self) -> str:
+    def to_dict(self) -> dict:
         rev_dict = {
             'guid': self.guid,
             'hash': self.hash,
@@ -113,7 +113,7 @@ class _Review:
             'submission': self.submission,
             'expiration': self.expiration
         }
-        return json_dumps(rev_dict)
+        return rev_dict
 
     def __del__(self) -> None:
         guid = self.guid
