@@ -16,12 +16,11 @@ class ReviewHandler:
     def create_review(self, guid: int, hash: str, expiration: int, reviewer: Address, stake: int) -> None:
         review = _Review(guid, self._db, self)
         review._guid.set(guid)
-        review.hash = hash
-        review._reviewer.set(self._score.msg.sender)
+        review._hash.set(hash)
+        review._reviewer.set(reviewer)
         review._stake.set(stake)
         review._submission.set(self._score.now())
         review._expiration.set(expiration)
-        review._review_handler = self
         self._guids.add(guid)
 
     def remove_review(self, guid: int) -> None:
@@ -110,7 +109,7 @@ class _Review:
         rev_dict = {
             'guid': self.guid,
             'hash': self.hash,
-            'reviewer': self._reviewer.get(),
+            'reviewer': self.reviewer,
             'stake': self.stake,
             'submission': self.submission,
             'expiration': self.expiration
