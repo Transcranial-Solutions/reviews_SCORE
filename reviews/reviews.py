@@ -83,6 +83,11 @@ class Reviews(IconScoreBase):
         reviews = [review.to_json() for review in reviews]
         return reviews
 
+    @external()
+    def get_review(self, guid: int) -> dict:
+        review = self._review_handler.get_review(guid)
+        return review.to_json()
+
     # ========  Helpers =========
 
     def _compute_review_hash(self, guid: int, review_message: Address, review_score: int, expiration: int, prep: Address, reviewer: Address) -> str:
