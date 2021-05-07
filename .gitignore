@@ -3,3 +3,4 @@ reviews/__pycache__/reviews.cpython-37.pyc
 reviews/tests/__pycache__/__init__.cpython-37.pyc
 reviews/tests/__pycache__/test_integrate_reviews.cpython-37.pyc
 reviews/tests/__pycache__/test_unit_reviews.cpython-37.pyc
+staking/tests/__pycache__/test_unit_staking.cpython-37.pyc
