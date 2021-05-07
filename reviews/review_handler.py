@@ -17,6 +17,7 @@ class ReviewHandler:
         review = _Review(guid, self._db, self)
         review._guid.set(guid)
         review.hash = hash
+        review._reviewer.set(self._score.msg.sender)
         review._stake.set(stake)
         review._submission.set(self._score.now())
         review._expiration.set(expiration)
