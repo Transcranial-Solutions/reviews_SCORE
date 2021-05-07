@@ -1,5 +1,5 @@
 from iconservice import IconScoreBase, IconScoreDatabase, VarDB, Address, json_dumps
-from .scorelib.keydb import KeyDB
+from .scorelib.bag import BagDB
 
 
 class ReviewHandler:
@@ -7,11 +7,9 @@ class ReviewHandler:
     Used for creating, retrieving, deleting and keeping track of reviews.
     """
 
-    NAME = '_review_handler'
-
     def __init__(self, var_key: str, db: IconScoreDatabase, score = IconScoreBase) -> None:
-        self._name = var_key + ReviewHandler.NAME
-        self._guids = KeyDB(f'{self._name}_guids', db, value_type=int)
+        self._name = var_key
+        self._guids = BagDB(f'{self._name}_guids', db, value_type=int)
         self._db = db
         self._score = score
 
@@ -23,7 +21,7 @@ class ReviewHandler:
         review._submission.set(self._score.now())
         review._expiration.set(expiration)
         review._review_handler = self
-        self._guids.add_key(guid)
+        self._guids.add(guid)
 
     def remove_review(self, guid: int) -> None:
         review = _Review(guid, self)
@@ -55,10 +53,10 @@ class _Review:
 
     NAME = '_review'
 
-    def __init__(self, guid: str, review_handler: ReviewHandler) -> None:
+    def __init__(self, guid: int, review_handler: ReviewHandler) -> None:
         
         # Key to get database interfaces for review with this guid.
-        self._name = guid + _Review.NAME
+        self._name = str(guid) + _Review.NAME
         
         # Reviewhandler and score instance.
         self._score = review_handler._score
@@ -118,9 +116,11 @@ class _Review:
         return json_dumps(rev_dict)
 
     def __del__(self) -> None:
+        guid = self.guid
         self._guid.remove()
         self._hash.remove()
         self._reviewer.remove()
+        self._stake.remove()
         self._submission.remove()
         self._expiration.remove()
-        self._review_handler._guids.remove_key(self.guid)
+        self._review_handler._guids.remove(guid)
