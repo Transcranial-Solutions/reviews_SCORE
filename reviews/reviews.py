@@ -83,7 +83,7 @@ class Reviews(IconScoreBase):
         reviews = [review.to_json() for review in reviews]
         return reviews
 
-    @external()
+    @external(readonly=True)
     def get_review(self, guid: int) -> dict:
         review = self._review_handler.get_review(guid)
         return review.to_json()
