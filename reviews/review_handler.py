@@ -53,7 +53,7 @@ class _Review:
 
     NAME = '_review'
 
-    def __init__(self, guid: int, db: IconScoreBase, review_handler: ReviewHandler) -> None:
+    def __init__(self, guid: int, db: IconScoreDatabase, review_handler: ReviewHandler) -> None:
         
         # Key to get database interfaces for review with this guid.
         self._name = str(guid) + _Review.NAME
