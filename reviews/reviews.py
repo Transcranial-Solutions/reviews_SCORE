@@ -3,7 +3,6 @@ from iconservice import (
     payable, Address, sha_256, revert, VarDB, json_loads, 
     json_dumps, sha3_256, create_address_with_key, recover_key
 )
-
 from .review_handler import ReviewHandler
 from .interfaces.staking_score import StakingScoreInterface
 
@@ -37,9 +36,9 @@ class Reviews(IconScoreBase):
         Submit a review. Transfer funds to staking contract.
         """
         self._review_handler.create_review(guid, hash, expiration, self.msg.sender, self.msg.value)
-        self.icx.transfer(self._staking_score.get(), self.msg.value)
-        staking_score = self.create_interface_score(self._staking_score.get(), StakingScoreInterface)
-        staking_score.deposit_funds(self.msg.value)
+        #self.icx.transfer(self._staking_score.get(), self.msg.value)
+        #staking_score = self.create_interface_score(self._staking_score.get(), StakingScoreInterface)
+        #staking_score.deposit_funds(self.msg.value)
 
     @external()
     def remove_review(self, guid: int) -> None:
@@ -82,6 +81,11 @@ class Reviews(IconScoreBase):
         reviews = self._review_handler.get_all_reviews()
         reviews = [review.to_json() for review in reviews]
         return reviews
+
+    @external(readonly=True)
+    def get_review(self, guid: int) -> dict:
+        review = self._review_handler.get_review(guid)
+        return review.to_dict()
 
     # ========  Helpers =========
 
