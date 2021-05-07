@@ -22,6 +22,7 @@ class ReviewHandler:
         review._submission.set(self._score.now())
         review._expiration.set(expiration)
         self._guids.add(guid)
+        
 
     def remove_review(self, guid: int) -> None:
         review = _Review(guid, self._db, self)
@@ -67,7 +68,7 @@ class _Review:
         self._guid = VarDB(f'{self._name}_guid', self._db, value_type=int)
         self._hash = VarDB(f'{self._name}_hash', self._db, value_type=str)
         self._reviewer = VarDB(f'{self._name}_expiration', self._db, value_type=Address)
-        self._stake = VarDB(f'{self._name}_stake', self._db, value_type=str)
+        self._stake = VarDB(f'{self._name}_stake', self._db, value_type=int)
         self._submission = VarDB(f'{self._name}_submission', self._db, value_type=int)
         self._expiration = VarDB(f'{self._name}_expiration', self._db, value_type=int)
 
