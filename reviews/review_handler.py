@@ -7,13 +7,17 @@ class ReviewHandler:
     Used for creating, retrieving, deleting and keeping track of reviews.
     """
 
-    def __init__(self, var_key: str, db: IconScoreDatabase, score = IconScoreBase) -> None:
+    def __init__(
+        self, var_key: str, db: IconScoreDatabase, score=IconScoreBase
+    ) -> None:
         self._name = var_key
-        self._guids = BagDB(f'{self._name}_guids', db, value_type=int)
+        self._guids = BagDB(f"{self._name}_guids", db, value_type=int)
         self._db = db
         self._score = score
 
-    def create_review(self, guid: int, hash: str, expiration: int, reviewer: Address, stake: int) -> None:
+    def create_review(
+        self, guid: int, hash: str, expiration: int, reviewer: Address, stake: int
+    ) -> None:
         review = _Review(guid, self._db, self)
         review._guid.set(guid)
         review._hash.set(hash)
@@ -22,7 +26,6 @@ class ReviewHandler:
         review._submission.set(self._score.now())
         review._expiration.set(expiration)
         self._guids.add(guid)
-        
 
     def remove_review(self, guid: int) -> None:
         review = _Review(guid, self._db, self)
@@ -52,25 +55,27 @@ class _Review:
     or delete them from the contract database.
     """
 
-    NAME = '_review'
+    NAME = "_review"
 
-    def __init__(self, guid: int, db: IconScoreDatabase, review_handler: ReviewHandler) -> None:
-        
+    def __init__(
+        self, guid: int, db: IconScoreDatabase, review_handler: ReviewHandler
+    ) -> None:
+
         # Key to get database interfaces for review with this guid.
         self._name = str(guid) + _Review.NAME
-        
+
         # Reviewhandler and score instance.
         self._score = review_handler._score
         self._review_handler = review_handler
         self._db = db
 
         # DB interface for review properties.
-        self._guid = VarDB(f'{self._name}_guid', self._db, value_type=int)
-        self._hash = VarDB(f'{self._name}_hash', self._db, value_type=str)
-        self._reviewer = VarDB(f'{self._name}_expiration', self._db, value_type=Address)
-        self._stake = VarDB(f'{self._name}_stake', self._db, value_type=int)
-        self._submission = VarDB(f'{self._name}_submission', self._db, value_type=int)
-        self._expiration = VarDB(f'{self._name}_expiration', self._db, value_type=int)
+        self._guid = VarDB(f"{self._name}_guid", self._db, value_type=int)
+        self._hash = VarDB(f"{self._name}_hash", self._db, value_type=str)
+        self._reviewer = VarDB(f"{self._name}_expiration", self._db, value_type=Address)
+        self._stake = VarDB(f"{self._name}_stake", self._db, value_type=int)
+        self._submission = VarDB(f"{self._name}_submission", self._db, value_type=int)
+        self._expiration = VarDB(f"{self._name}_expiration", self._db, value_type=int)
 
     @property
     def guid(self) -> int:
@@ -105,24 +110,24 @@ class _Review:
             return True
         else:
             return False
-    
+
     def to_dict(self) -> dict:
         rev_dict = {
-            'guid': self.guid,
-            'hash': self.hash,
-            'reviewer': self.reviewer,
-            'stake': self.stake,
-            'submission': self.submission,
-            'expiration': self.expiration
+            "guid": self.guid,
+            "hash": self.hash,
+            "reviewer": self.reviewer,
+            "stake": self.stake,
+            "submission": self.submission,
+            "expiration": self.expiration,
         }
         return rev_dict
 
-    def __del__(self) -> None:
-        guid = self.guid
-        self._guid.remove()
-        self._hash.remove()
-        self._reviewer.remove()
-        self._stake.remove()
-        self._submission.remove()
-        self._expiration.remove()
-        self._review_handler._guids.remove(guid)
+    # def __del__(self) -> None:
+    #     guid = self.guid
+    #     self._guid.remove()
+    #     self._hash.remove()
+    #     self._reviewer.remove()
+    #     self._stake.remove()
+    #     self._submission.remove()
+    #     self._expiration.remove()
+    #     self._review_handler._guids.remove(guid)
