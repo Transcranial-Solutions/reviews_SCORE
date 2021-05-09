@@ -56,7 +56,7 @@ class Reviews(IconScoreBase):
 
         staking_score = self.create_interface_score(self._staking_score.get(), StakingScoreInterface)
         staking_score.withdraw_funds(review.reviewer, review.stake, review.submission, review.expiration)
-        del review
+        review.remove()
 
     @external()
     def edit_review(self):

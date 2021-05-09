@@ -29,7 +29,7 @@ class ReviewHandler:
 
     def remove_review(self, guid: int) -> None:
         review = _Review(guid, self._db, self)
-        del review
+        review.remove()
 
     def get_review(self, guid: int):
         return _Review(guid, self._db, self)
@@ -122,12 +122,12 @@ class _Review:
         }
         return rev_dict
 
-    # def __del__(self) -> None:
-    #     guid = self.guid
-    #     self._guid.remove()
-    #     self._hash.remove()
-    #     self._reviewer.remove()
-    #     self._stake.remove()
-    #     self._submission.remove()
-    #     self._expiration.remove()
-    #     self._review_handler._guids.remove(guid)
+    def remove(self) -> None:
+        guid = self.guid
+        self._guid.remove()
+        self._hash.remove()
+        self._reviewer.remove()
+        self._stake.remove()
+        self._submission.remove()
+        self._expiration.remove()
+        self._review_handler._guids.remove(guid)
