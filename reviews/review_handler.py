@@ -39,6 +39,9 @@ class ReviewHandler:
         for guid in self._guids:
             reviews.append(self.get_review(guid))
         return reviews
+    
+    def get_review_count(self) -> int:
+        return len(self._guids)
 
     ## For testing.
     def get_all_reviews(self) -> list:
@@ -72,7 +75,7 @@ class _Review:
         # DB interface for review properties.
         self._guid = VarDB(f"{self._name}_guid", self._db, value_type=int)
         self._hash = VarDB(f"{self._name}_hash", self._db, value_type=str)
-        self._reviewer = VarDB(f"{self._name}_expiration", self._db, value_type=Address)
+        self._reviewer = VarDB(f"{self._name}_reviewer", self._db, value_type=Address)
         self._stake = VarDB(f"{self._name}_stake", self._db, value_type=int)
         self._submission = VarDB(f"{self._name}_submission", self._db, value_type=int)
         self._expiration = VarDB(f"{self._name}_expiration", self._db, value_type=int)
