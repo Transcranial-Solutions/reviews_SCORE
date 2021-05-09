@@ -52,7 +52,7 @@ class Reviews(IconScoreBase):
         elif review.reviewer == self.msg.sender:
             pass
         else:
-            revert('In order to remove a review, you must either be the owner, or the review has have expired.')
+            revert('In order to remove a review, you must either be the owner, or the review has to have expired.')
 
         staking_score = self.create_interface_score(self._staking_score.get(), StakingScoreInterface)
         staking_score.withdraw_funds(review.reviewer, review.stake, review.submission, review.expiration)
