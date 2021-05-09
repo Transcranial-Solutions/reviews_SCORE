@@ -28,7 +28,19 @@ class TestReviewHandler(ScoreTestCase):
         self.assertEqual(review_handler.get_review_count(), prev_count + 1)
 
     def test_remove_review(self):
-        pass
+        review_handler = self.score._review_handler
+        review_handler.create_review(1, "hash1", 100, self.score.msg.sender, self.score.msg.value)
+        prev_count = review_handler.get_review_count()
+        review = review_handler.get_review(1)
+        review.remove()
+        
+        self.assertFalse(review.guid)
+        self.assertFalse(review.hash)
+        self.assertFalse(review.reviewer)
+        self.assertFalse(review.stake)
+        self.assertFalse(review.submission)
+        self.assertFalse(review.expiration)
+        self.assertEqual(review_handler.get_review_count(), prev_count - 1)
 
     def test_get_review(self):
         pass
