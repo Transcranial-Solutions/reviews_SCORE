@@ -140,3 +140,36 @@ class TestTest(IconIntegrateTestBase):
         response = self.process_call(call, self.icon_service)
 
         self.assertEqual(100, response["guid"])
+        print(response)
+
+    def test_remove_review(self):
+        call = (
+            CallTransactionBuilder()
+            .from_(self._test1.get_address())
+            .to(self._score_address)
+            .step_limit(100_000_000)
+            .nid(3)
+            .nonce(100)
+            .method("remove_review")
+            .params({"guid": 100})
+            .build()
+        )
+
+        signed_trans = SignedTransaction(call, self._test1)
+        response = self.process_transaction(signed_trans, self.icon_service)
+
+        self.assertEqual(True, response["status"])
+
+        call = (
+            CallBuilder()
+            .from_(self._test1.get_address())
+            .to(self._score_address)
+            .method("get_review")
+            .params({"guid": 100})
+            .build()
+        )
+
+        response = self.process_call(call, self.icon_service)
+
+        self.assertEqual(0, response["guid"])
+    
