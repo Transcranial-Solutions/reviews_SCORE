@@ -109,7 +109,7 @@ class Staking(IconScoreBase):
     def _create_delegation(self, value: int) -> None:
         delegations = []
         delegation = {
-            'address': Prep.transcranial_solutions,
+            'address': "hxf5bdb1625e4b7fc6de7d85f9dd921090b27ec7d0",
             'value': value
         }
         delegations.append(delegation)
