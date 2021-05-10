@@ -1,5 +1,5 @@
 import os
-
+import uuid
 from iconsdk.builder.call_builder import CallBuilder
 from iconsdk.builder.transaction_builder import (
     DeployTransactionBuilder,
@@ -32,6 +32,7 @@ class TestTest(IconIntegrateTestBase):
 
         self._score_address = self._deploy_score()["scoreAddress"]
         self._staking_score_address = self._deploy_staking_score()["scoreAddress"]
+        self._test_guid = uuid.uuid4().int
 
     def _deploy_score(self, to: str = SCORE_INSTALL_ADDRESS) -> dict:
         # Generates an instance of transaction for deploying SCORE.
@@ -119,7 +120,7 @@ class TestTest(IconIntegrateTestBase):
             .nid(3)
             .nonce(100)
             .method("submit_review")
-            .params({"guid": 100, "hash": "testhash", "expiration": 10})
+            .params({"guid": self._test_guid, "hash": "testhash", "expiration": 10})
             .build()
         )
 
@@ -133,14 +134,13 @@ class TestTest(IconIntegrateTestBase):
             .from_(self._test1.get_address())
             .to(self._score_address)
             .method("get_review")
-            .params({"guid": 100})
+            .params({"guid": self._test_guid})
             .build()
         )
 
         response = self.process_call(call, self.icon_service)
 
-        self.assertEqual(100, response["guid"])
-        print(response)
+        self.assertEqual(self._test_guid, response["guid"])
 
     def test_remove_review(self):
         call = (
@@ -151,7 +151,7 @@ class TestTest(IconIntegrateTestBase):
             .nid(3)
             .nonce(100)
             .method("remove_review")
-            .params({"guid": 100})
+            .params({"guid": self._test_guid})
             .build()
         )
 
@@ -165,11 +165,10 @@ class TestTest(IconIntegrateTestBase):
             .from_(self._test1.get_address())
             .to(self._score_address)
             .method("get_review")
-            .params({"guid": 100})
+            .params({"guid": self._test_guid})
             .build()
         )
 
         response = self.process_call(call, self.icon_service)
 
         self.assertEqual(0, response["guid"])
-    
