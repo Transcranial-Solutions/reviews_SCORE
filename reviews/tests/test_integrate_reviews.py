@@ -8,6 +8,7 @@ from iconsdk.builder.transaction_builder import (
 from iconsdk.libs.in_memory_zip import gen_deploy_data_content
 from iconsdk.signed_transaction import SignedTransaction
 from tbears.libs.icon_integrate_test import IconIntegrateTestBase, SCORE_INSTALL_ADDRESS
+from hashlib import sha256
 
 DIR_PATH = os.path.abspath(os.path.dirname(__file__))
 STAKING_SCORE_INSTALL_ADDRESS = "cx1000000000000000000000000000000000000000"
@@ -33,6 +34,10 @@ class TestTest(IconIntegrateTestBase):
         self._score_address = self._deploy_score()["scoreAddress"]
         self._staking_score_address = self._deploy_staking_score()["scoreAddress"]
         self._test_guid = uuid.uuid4().int
+        self._message = r"People always ask me about transcranial solutions, It's fantastic. Let me tell you about transcranial solutions. I do very well with transcranial solutions. I love transcranial solutions. No one loves transcranial solutions more than me, BELIEVE ME. transcranial solutions loves me. We're going to have so many transcranial solutions you are going to get sick of transcranial solutions. The transcranial solutions just got 10 feet higher. I have the best transcranial solutions."
+        self._review_score = 5
+        self._expiration = 10
+        self._prep = "hx2f3fb9a9ff98df2145936d2bfcaa3837a289496b"
 
     def _deploy_score(self, to: str = SCORE_INSTALL_ADDRESS) -> dict:
         # Generates an instance of transaction for deploying SCORE.
@@ -111,6 +116,17 @@ class TestTest(IconIntegrateTestBase):
         self.assertEqual(True, response["status"])
 
     def test_submit_review(self):
+        byte_data = bytes(
+            str(self._test_guid)
+            + self._message
+            + str(self._review_score)
+            + str(self._expiration)
+            + self._prep
+            + self._test1.get_address(),
+            "utf-8",
+        )
+        msg_hash = sha256(byte_data).hexdigest()
+
         call = (
             CallTransactionBuilder()
             .from_(self._test1.get_address())
@@ -120,7 +136,13 @@ class TestTest(IconIntegrateTestBase):
             .nid(3)
             .nonce(100)
             .method("submit_review")
-            .params({"guid": self._test_guid, "hash": "testhash", "expiration": 10})
+            .params(
+                {
+                    "guid": self._test_guid,
+                    "hash": msg_hash,
+                    "expiration": self._expiration,
+                }
+            )
             .build()
         )
 
@@ -141,6 +163,27 @@ class TestTest(IconIntegrateTestBase):
         response = self.process_call(call, self.icon_service)
 
         self.assertEqual(self._test_guid, response["guid"])
+
+        call = (
+            CallBuilder()
+            .from_(self._test1.get_address())
+            .to(self._score_address)
+            .method("authenticate_review")
+            .params(
+                {
+                    "guid": self._test_guid,
+                    "review_message": self._message,
+                    "review_score": self._review_score,
+                    "expiration": self._expiration,
+                    "prep": self._prep,
+                    "reviewer": self._test1.get_address(),
+                }
+            )
+            .build()
+        )
+
+        response = self.process_call(call, self.icon_service)
+        self.assertEqual("0x1", response)
 
     def test_remove_review(self):
         call = (
