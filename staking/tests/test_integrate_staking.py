@@ -48,11 +48,4 @@ class TestTest(IconIntegrateTestBase):
 
         self.assertEqual(self._score_address, tx_result['scoreAddress'])
 
-    #def test_call_hello(self):
-    #    # Generates a call instance using the CallBuilder
-    #    call = CallBuilder().from_(self._test1.get_address())             .to(self._score_address)             .method("hello")             .build()
-#
-    #    # Sends the call request
-    #    response = self.process_call(call, self.icon_service)
-#
-    #    self.assertEqual("Hello", response)
+
