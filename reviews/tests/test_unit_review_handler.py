@@ -46,7 +46,31 @@ class TestReviewHandler(ScoreTestCase):
         pass
 
     def test_get_reviews(self):
-        pass
+        review_handler = self.score._review_handler
+        review_handler.create_review(1, "hash1", 100, self.score.msg.sender, self.score.msg.value)
+        review_handler.create_review(2, "hash2", 200, self.score.msg.sender, self.score.msg.value)
+        reviews = review_handler.get_reviews([1,2])
+        review_1 = reviews[0]
+        review_2 = reviews[1]
+
+        # Reviewlist length.
+        self.assertEqual(len(reviews), 2)
+
+        # Review_1.
+        self.assertEqual(review_1.guid, 1)
+        self.assertEqual(review_1.hash, "hash1")
+        self.assertEqual(review_1.reviewer, self.score.msg.sender)
+        self.assertEqual(review_1.stake, self.score.msg.value)
+        self.assertEqual(review_1.submission, self.score.now())
+        self.assertEqual(review_1.expiration, 100)
+
+        # Review_2.
+        self.assertEqual(review_2.guid, 2)
+        self.assertEqual(review_2.hash, "hash2")
+        self.assertEqual(review_2.reviewer, self.score.msg.sender)
+        self.assertEqual(review_2.stake, self.score.msg.value)
+        self.assertEqual(review_2.submission, self.score.now())
+        self.assertEqual(review_2.expiration, 200)  
 
     def test_get_all_reviews(self):
         pass
