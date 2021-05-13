@@ -118,5 +118,6 @@ class Staking(IconScoreBase):
     def _get_unlocked_funds(self):
         return self.icx.get_balance(self.address) - self._total_delegation.get()
         
-
-        
+    @payable
+    def fallback(self):
+        pass
