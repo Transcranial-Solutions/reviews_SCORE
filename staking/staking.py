@@ -96,14 +96,14 @@ class Staking(IconScoreBase):
 
     def _increment_funds(self, value: int):
         new_amount = self._total_delegation.get() + value
-        self._system_score.setStake(new_amount)
-        self._system_score.setDelegation(self._create_delegation(new_amount))
+        #self._system_score.setStake(new_amount)
+        #self._system_score.setDelegation(self._create_delegation(new_amount))
         self._total_delegation.set(new_amount)
 
     def _decrement_funds(self, value: int):
         new_amount = self._total_delegation.get() - value
-        self._system_score.setDelegation(self._create_delegation(new_amount))
-        self._system_score.setStake(new_amount)
+        #self._system_score.setDelegation(self._create_delegation(new_amount))
+        #self._system_score.setStake(new_amount)
         self._total_delegation.set(new_amount)
 
     def _create_delegation(self, value: int) -> None:
