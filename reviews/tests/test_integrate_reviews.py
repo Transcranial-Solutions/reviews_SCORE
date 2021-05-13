@@ -183,9 +183,60 @@ class TestTest(IconIntegrateTestBase):
         )
 
         response = self.process_call(call, self.icon_service)
+
         self.assertEqual("0x1", response)
 
     def test_remove_review(self):
+
+        # Add review.
+        byte_data = bytes(
+            str(self._test_guid)
+            + self._message
+            + str(self._review_score)
+            + str(self._expiration)
+            + self._prep
+            + self._test1.get_address(),
+            "utf-8",
+        )
+        msg_hash = sha256(byte_data).hexdigest()
+
+        call = (
+            CallTransactionBuilder()
+            .from_(self._test1.get_address())
+            .to(self._score_address)
+            .step_limit(100_000_000)
+            .value(10)
+            .nid(3)
+            .nonce(100)
+            .method("submit_review")
+            .params(
+                {
+                    "guid": self._test_guid,
+                    "hash": msg_hash,
+                    "expiration": self._expiration,
+                }
+            )
+            .build()
+        )
+
+        signed_trans = SignedTransaction(call, self._test1)
+        response = self.process_transaction(signed_trans, self.icon_service)
+
+        # Check for review.
+        call = (
+            CallBuilder()
+            .from_(self._test1.get_address())
+            .to(self._score_address)
+            .method("get_review")
+            .params({"guid": self._test_guid})
+            .build()
+        )
+
+        response = self.process_call(call, self.icon_service)
+
+        self.assertEqual(self._test_guid, response["guid"])
+
+        # Remove review.
         call = (
             CallTransactionBuilder()
             .from_(self._test1.get_address())
@@ -203,6 +254,7 @@ class TestTest(IconIntegrateTestBase):
 
         self.assertEqual(True, response["status"])
 
+        # Check if review removed.
         call = (
             CallBuilder()
             .from_(self._test1.get_address())
