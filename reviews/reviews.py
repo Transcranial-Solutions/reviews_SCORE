@@ -49,9 +49,9 @@ class Reviews(IconScoreBase):
         self._review_handler.create_review(
             guid, hash, expiration, self.msg.sender, self.msg.value
         )
-        # self.icx.transfer(self._staking_score.get(), self.msg.value)
-        # staking_score = self.create_interface_score(self._staking_score.get(), StakingScoreInterface)
-        # staking_score.deposit_funds(self.msg.value)
+        self.icx.transfer(self._staking_score.get(), self.msg.value)
+        staking_score = self.create_interface_score(self._staking_score.get(), StakingScoreInterface)
+        staking_score.deposit_funds(self.msg.value)
 
     @external()
     def remove_review(self, guid: int) -> None:
