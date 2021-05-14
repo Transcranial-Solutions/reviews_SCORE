@@ -51,7 +51,7 @@ class Staking(IconScoreBase):
         self._only_review_contract()
         self._decrement_funds(amount)
         payout_amount = amount + self._compute_rewards(amount, submission, expiration)
-        self._payout_queue.append(json_dumps({'address': reviewer, 'amount': payout_amount}))
+        self._payout_queue.append(json_dumps({'address': str(reviewer), 'amount': payout_amount}))
 
     @external
     def payout_funds(self): 
@@ -61,7 +61,7 @@ class Staking(IconScoreBase):
             entry = json_loads(entry)
 
             if entry['value'] <= unlocked_funds:
-                self.icx.transfer(entry['address'], entry['value'])
+                self.icx.transfer(Address.from_string(entry['address']), entry['value'])
             
             else:
                 break
