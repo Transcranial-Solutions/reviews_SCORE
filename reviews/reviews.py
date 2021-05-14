@@ -37,7 +37,7 @@ class Reviews(IconScoreBase):
     def set_staking_score(self, score: Address) -> None:
         self._staking_score.set(score)
 
-    @external()
+    @external(readonly=True)
     def get_staking_score(self) -> Address:
         return self._staking_score.get()
 
