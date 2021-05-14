@@ -17,7 +17,6 @@ from iconservice import (
 from .review_handler import ReviewHandler
 from .interfaces.staking_score import StakingScoreInterface
 
-
 TAG = "Reviews"
 
 
