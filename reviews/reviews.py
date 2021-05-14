@@ -107,7 +107,7 @@ class Reviews(IconScoreBase):
     @external(readonly=True)
     def get_all_reviews(self) -> list:
         reviews = self._review_handler.get_all_reviews()
-        reviews = [review.to_json() for review in reviews]
+        reviews = [review.to_dict() for review in reviews]
         return reviews
 
     @external(readonly=True)
