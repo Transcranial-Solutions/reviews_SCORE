@@ -29,6 +29,18 @@ class Staking(IconScoreBase):
     def on_update(self) -> None:
         super().on_update()
     
+    # ============================= Settings =====================================
+
+    @external
+    def set_review_score(self, score: Address) -> None:
+        self._review_score.set(score)
+
+    @external(readonly=True)
+    def get_review_score(self) -> Address:
+        return self._review_score.get()
+
+    # ============================================================================
+
     @external
     def deposit_funds(self, value: int):
         self._increment_funds(value)
@@ -68,9 +80,18 @@ class Staking(IconScoreBase):
         # Add reward rate to array.
         self._add_reward_rate(loop_claimed)
 
+    @external(readonly=True)
+    def get_total_delegation(self) -> int:
+        return self._total_delegation.get()
 
-# ============================= helpers =====================================
+    @external(readonly=True)
+    def get_rewards_rates(self) -> list:
+        reward_rates = []
+        for reward_rate in self._reward_rates:
+            reward_rates.append(json_loads(reward_rate))
+        return reward_rates
 
+# ============================= Helpers =====================================
 
     def _compute_reward_rate(self, loop: int) -> int:
         return loop // self._total_delegation.get()
