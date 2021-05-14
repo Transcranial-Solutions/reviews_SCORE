@@ -43,10 +43,12 @@ class Staking(IconScoreBase):
 
     @external
     def deposit_funds(self, value: int):
+        self._only_review_contract()
         self._increment_funds(value)
 
     @external
     def withdraw_funds(self, reviewer: Address, amount: int, submission: int, expiration: int):
+        self._only_review_contract()
         self._decrement_funds(amount)
         payout_amount = amount + self._compute_rewards(amount, submission, expiration)
         self._payout_queue.append(json_dumps({'address': reviewer, 'amount': payout_amount}))
@@ -139,7 +141,12 @@ class Staking(IconScoreBase):
 
     def _get_unlocked_funds(self):
         return self.icx.get_balance(self.address) - self._total_delegation.get()
+    
+    def _only_review_contract(self) -> None:
+        if not self.msg.sender == self._review_score.get():
+            revert('This method is can only be called by the review contract.')
         
     @payable
     def fallback(self):
         pass
+    
