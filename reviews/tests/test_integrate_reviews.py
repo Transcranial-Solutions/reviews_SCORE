@@ -121,147 +121,147 @@ class TestTest(IconIntegrateTestBase):
 
         self.assertEqual(True, response["status"])
 
-    def test_submit_review(self):
-        byte_data = bytes(
-            str(self._test_guid)
-            + self._message
-            + str(self._review_score)
-            + str(self._expiration)
-            + self._prep
-            + self._test1.get_address(),
-            "utf-8",
-        )
-        msg_hash = sha256(byte_data).hexdigest()
-
-        call = (
-            CallTransactionBuilder()
-            .from_(self._test1.get_address())
-            .to(self._review_score_address)
-            .step_limit(100_000_000)
-            .value(10)
-            .nid(3)
-            .nonce(100)
-            .method("submit_review")
-            .params(
-                {
-                    "guid": self._test_guid,
-                    "hash": msg_hash,
-                    "expiration": self._expiration,
-                }
-            )
-            .build()
-        )
-
-        signed_trans = SignedTransaction(call, self._test1)
-        response = self.process_transaction(signed_trans, self.icon_service)
-
-        self.assertEqual(True, response["status"])
-
-        call = (
-            CallBuilder()
-            .from_(self._test1.get_address())
-            .to(self._review_score_address)
-            .method("get_review")
-            .params({"guid": self._test_guid})
-            .build()
-        )
-
-        response = self.process_call(call, self.icon_service)
-
-        self.assertEqual(self._test_guid, response["guid"])
-
-        call = (
-            CallBuilder()
-            .from_(self._test1.get_address())
-            .to(self._review_score_address)
-            .method("authenticate_review")
-            .params(
-                {
-                    "guid": self._test_guid,
-                    "review_message": self._message,
-                    "review_score": self._review_score,
-                    "expiration": self._expiration,
-                    "prep": self._prep,
-                    "reviewer": self._test1.get_address(),
-                }
-            )
-            .build()
-        )
-
-        response = self.process_call(call, self.icon_service)
-
-        self.assertEqual("0x1", response)
-
-    def test_remove_review(self):
-        
-        # Add review.
-        byte_data = bytes(
-            str(self._test_guid)
-            + self._message
-            + str(self._review_score)
-            + str(self._expiration)
-            + self._prep
-            + self._test1.get_address(),
-            "utf-8",
-        )
-        msg_hash = sha256(byte_data).hexdigest()
-        call = (
-            CallTransactionBuilder()
-            .from_(self._test1.get_address())
-            .to(self._review_score_address)
-            .step_limit(100_000_000)
-            .value(10)
-            .nid(3)
-            .nonce(100)
-            .method("submit_review")
-            .params(
-                {
-                    "guid": self._test_guid,
-                    "hash": msg_hash,
-                    "expiration": self._expiration,
-                }
-            )
-            .build()
-        )
-        signed_trans = SignedTransaction(call, self._test1)
-        response = self.process_transaction(signed_trans, self.icon_service)
-        
-        # Check for review.
-        call = (
-            CallBuilder()
-            .from_(self._test1.get_address())
-            .to(self._review_score_address)
-            .method("get_review")
-            .params({"guid": self._test_guid})
-            .build()
-        )
-        response = self.process_call(call, self.icon_service)
-        self.assertEqual(self._test_guid, response["guid"])
-        
-        # Remove review.
-        call = (
-            CallTransactionBuilder()
-            .from_(self._test1.get_address())
-            .to(self._review_score_address)
-            .step_limit(100_000_000)
-            .nid(3)
-            .nonce(100)
-            .method("remove_review")
-            .params({"guid": self._test_guid})
-            .build()
-        )
-        signed_trans = SignedTransaction(call, self._test1)
-        response = self.process_transaction(signed_trans, self.icon_service)
-        self.assertEqual(True, response["status"])
-        
-        # Check if review removed.
-        call = (
-            CallBuilder()
-            .from_(self._test1.get_address())
-            .to(self._review_score_address)
-            .method("get_review")
-            .params({"guid": self._test_guid})
-            .build()
-        )
-        response = self.process_call(call, self.icon_service)
-        self.assertEqual(0, response["guid"])
+    #def test_submit_review(self):
+    #    byte_data = bytes(
+    #        str(self._test_guid)
+    #        + self._message
+    #        + str(self._review_score)
+    #        + str(self._expiration)
+    #        + self._prep
+    #        + self._test1.get_address(),
+    #        "utf-8",
+    #    )
+    #    msg_hash = sha256(byte_data).hexdigest()
+#
+    #    call = (
+    #        CallTransactionBuilder()
+    #        .from_(self._test1.get_address())
+    #        .to(self._review_score_address)
+    #        .step_limit(100_000_000)
+    #        .value(10)
+    #        .nid(3)
+    #        .nonce(100)
+    #        .method("submit_review")
+    #        .params(
+    #            {
+    #                "guid": self._test_guid,
+    #                "hash": msg_hash,
+    #                "expiration": self._expiration,
+    #            }
+    #        )
+    #        .build()
+    #    )
+#
+    #    signed_trans = SignedTransaction(call, self._test1)
+    #    response = self.process_transaction(signed_trans, self.icon_service)
+#
+    #    self.assertEqual(True, response["status"])
+#
+    #    call = (
+    #        CallBuilder()
+    #        .from_(self._test1.get_address())
+    #        .to(self._review_score_address)
+    #        .method("get_review")
+    #        .params({"guid": self._test_guid})
+    #        .build()
+    #    )
+#
+    #    response = self.process_call(call, self.icon_service)
+#
+    #    self.assertEqual(self._test_guid, response["guid"])
+#
+    #    call = (
+    #        CallBuilder()
+    #        .from_(self._test1.get_address())
+    #        .to(self._review_score_address)
+    #        .method("authenticate_review")
+    #        .params(
+    #            {
+    #                "guid": self._test_guid,
+    #                "review_message": self._message,
+    #                "review_score": self._review_score,
+    #                "expiration": self._expiration,
+    #                "prep": self._prep,
+    #                "reviewer": self._test1.get_address(),
+    #            }
+    #        )
+    #        .build()
+    #    )
+#
+    #    response = self.process_call(call, self.icon_service)
+#
+    #    self.assertEqual("0x1", response)
+#
+    #def test_remove_review(self):
+    #    
+    #    # Add review.
+    #    byte_data = bytes(
+    #        str(self._test_guid)
+    #        + self._message
+    #        + str(self._review_score)
+    #        + str(self._expiration)
+    #        + self._prep
+    #        + self._test1.get_address(),
+    #        "utf-8",
+    #    )
+    #    msg_hash = sha256(byte_data).hexdigest()
+    #    call = (
+    #        CallTransactionBuilder()
+    #        .from_(self._test1.get_address())
+    #        .to(self._review_score_address)
+    #        .step_limit(100_000_000)
+    #        .value(10)
+    #        .nid(3)
+    #        .nonce(100)
+    #        .method("submit_review")
+    #        .params(
+    #            {
+    #                "guid": self._test_guid,
+    #                "hash": msg_hash,
+    #                "expiration": self._expiration,
+    #            }
+    #        )
+    #        .build()
+    #    )
+    #    signed_trans = SignedTransaction(call, self._test1)
+    #    response = self.process_transaction(signed_trans, self.icon_service)
+    #    
+    #    # Check for review.
+    #    call = (
+    #        CallBuilder()
+    #        .from_(self._test1.get_address())
+    #        .to(self._review_score_address)
+    #        .method("get_review")
+    #        .params({"guid": self._test_guid})
+    #        .build()
+    #    )
+    #    response = self.process_call(call, self.icon_service)
+    #    self.assertEqual(self._test_guid, response["guid"])
+    #    
+    #    # Remove review.
+    #    call = (
+    #        CallTransactionBuilder()
+    #        .from_(self._test1.get_address())
+    #        .to(self._review_score_address)
+    #        .step_limit(100_000_000)
+    #        .nid(3)
+    #        .nonce(100)
+    #        .method("remove_review")
+    #        .params({"guid": self._test_guid})
+    #        .build()
+    #    )
+    #    signed_trans = SignedTransaction(call, self._test1)
+    #    response = self.process_transaction(signed_trans, self.icon_service)
+    #    self.assertEqual(True, response["status"])
+    #    
+    #    # Check if review removed.
+    #    call = (
+    #        CallBuilder()
+    #        .from_(self._test1.get_address())
+    #        .to(self._review_score_address)
+    #        .method("get_review")
+    #        .params({"guid": self._test_guid})
+    #        .build()
+    #    )
+    #    response = self.process_call(call, self.icon_service)
+    #    self.assertEqual(0, response["guid"])
