@@ -40,7 +40,6 @@ class TestTest(IconIntegrateTestBase):
         self._prep = "hx2f3fb9a9ff98df2145936d2bfcaa3837a289496b"
         self._set_staking_score()
 
-
     def _deploy_score(self, to: str = SCORE_INSTALL_ADDRESS) -> dict:
         # Generates an instance of transaction for deploying SCORE.
         transaction = (
