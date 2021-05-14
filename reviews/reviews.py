@@ -37,6 +37,10 @@ class Reviews(IconScoreBase):
     def set_staking_score(self, score: Address) -> None:
         self._staking_score.set(score)
 
+    @external()
+    def get_staking_score(self) -> Address:
+        return self._staking_score.get()
+
     # =========  Reviews  =========
 
     @payable
@@ -68,8 +72,8 @@ class Reviews(IconScoreBase):
                 "In order to remove a review, you must either be the owner, or the review has to have expired."
             )
 
-        # staking_score = self.create_interface_score(self._staking_score.get(), StakingScoreInterface)
-        # staking_score.withdraw_funds(review.reviewer, review.stake, review.submission, review.expiration)
+        staking_score = self.create_interface_score(self._staking_score.get(), StakingScoreInterface)
+        staking_score.withdraw_funds(review.reviewer, review.stake, review.submission, review.expiration)
         review.remove()
 
     @external()
