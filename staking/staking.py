@@ -28,8 +28,7 @@ class Staking(IconScoreBase):
 
     def on_update(self) -> None:
         super().on_update()
- 
-    @payable
+    
     @external
     def deposit_funds(self, value: int):
         self._increment_funds(value)
