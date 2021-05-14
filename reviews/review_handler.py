@@ -1,4 +1,4 @@
-from iconservice import IconScoreBase, IconScoreDatabase, VarDB, Address, json_dumps
+from iconservice import IconScoreBase, IconScoreDatabase, VarDB, Address, json_dumps, revert
 from .scorelib.bag import BagDB
 
 
@@ -32,6 +32,8 @@ class ReviewHandler:
         review.remove()
 
     def get_review(self, guid: int):
+        if not guid in self._guids:
+            revert('Review does not exist.')
         return _Review(guid, self._db, self)
 
     def get_reviews(self, guids: list) -> list:
