@@ -39,7 +39,7 @@ class Staking(IconScoreBase):
     def get_review_score(self) -> Address:
         return self._review_score.get()
 
-    # ============================================================================
+    # ============================ Fund handling =====================================
 
     @external
     def deposit_funds(self, value: int):
@@ -79,6 +79,8 @@ class Staking(IconScoreBase):
 
         # Add reward rate to array.
         self._add_reward_rate(loop_claimed)
+
+# ======================== Get info about funds =========================
 
     @external(readonly=True)
     def get_total_delegation(self) -> int:
