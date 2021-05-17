@@ -79,7 +79,15 @@ class Icp(IconScoreBase, IRC2TokenStandard):
     
     @external(readonly=True)
     def add_minter(self, _minter: Address) -> None:
+        if not self.msg.sender == self.owner:
+            revert("Only owner can assign minters.")
         self._minters.add(_minter)
+
+    @external
+    def remove_minter(self, _minter: Address) -> None:
+        if not self.msg.sender == self.owner:
+            revert("Only owner can remove minters.")
+        self._minters.remove(_minter)
 
     @external
     def mint(self, _to: Address, _amount: int, _data: bytes = None):
