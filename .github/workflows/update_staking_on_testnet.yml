@@ -1,0 +1,28 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Update reviews to testnet
+
+# Controls when the action will run. 
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container:
+      image: iconloop/tbears:mainnet
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: tbears update to testnet
+        env:
+          pw: ${{ secrets.TESTNET_KEYSTORE_PW }}
+          private_key: ${{ secrets.TESTNET_PRIVATE_KEY }}
+        run: |
+          python -c "import os;from iconsdk.wallet.wallet import KeyWallet;KeyWallet.load(bytes.fromhex(os.getenv('private_key'))).store('key.store', os.getenv('pw'))"
+          tbears deploy -u https://bicon.net.solidwallet.io/api/v3 -m update reviews -k key.store -p $pw -o cx034a5e0f843e9c1a4e246735443f42e4556957d3
