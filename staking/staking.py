@@ -97,8 +97,8 @@ class Staking(IconScoreBase):
 
 # ============================= Helpers =====================================
 
-    def _compute_reward_rate(self, loop: int) -> int:
-        return loop // self._total_delegation.get()
+    def _compute_reward_rate(self, loop: int) -> float:
+        return loop / self._total_delegation.get()
 
     def _add_reward_rate(self, reward_rate: int) -> None:
         reward_rate = {
@@ -114,7 +114,7 @@ class Staking(IconScoreBase):
             timestamp = reward_rate['timestamp']
 
             if submission_timestamp < timestamp < expiration_timestamp:
-                total_rewards += reward_rate['reward_rate'] * value
+                total_rewards += reward_rate['reward_rate'] * (value + total_rewards)
             
         return total_rewards
 
