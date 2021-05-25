@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Update reviews to testnet
+name: Update reviews on testnet
 
 # Controls when the action will run. 
 on:
@@ -19,7 +19,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      - name: tbears update to testnet
+      - name: tbears update on testnet
         env:
           pw: ${{ secrets.TESTNET_KEYSTORE_PW }}
           private_key: ${{ secrets.TESTNET_PRIVATE_KEY }}
