@@ -73,14 +73,15 @@ class Staking(IconScoreBase):
         if not iscore:
             revert('No iscore to claim.')
 
-        loop_claimed = iscore_to_loop(self._system_score.claimIScore())
-        new_delegation_amount = self._total_delegation.get() + loop_claimed
+        self._system_score.claimIScore()
+        loop_claimed = iscore_to_loop(iscore)
 
         # Restake and redelegate new amounts.
-        self._increment_funds(new_delegation_amount)
+        self._increment_funds(loop_claimed)
 
-        # Add reward rate to array.
-        self._add_reward_rate(loop_claimed)
+        # Compute and add reward rate.
+        reward_rate = self._compute_reward_rate(loop_claimed)
+        self._add_reward_rate(reward_rate)
 
 # ======================== Get info about funds =========================
 
@@ -100,10 +101,10 @@ class Staking(IconScoreBase):
     def _compute_reward_rate(self, loop: int) -> float:
         return loop / self._total_delegation.get()
 
-    def _add_reward_rate(self, reward_rate: int) -> None:
+    def _add_reward_rate(self, reward_rate: float) -> None:
         reward_rate = {
             'timestamp': self.now(),
-            'reward_rate': self._compute_reward_rate(reward_rate) 
+            'reward_rate': reward_rate 
         }
         self._reward_rates.put(json_dumps(reward_rate))
 
