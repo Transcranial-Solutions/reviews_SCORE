@@ -109,8 +109,12 @@ class Staking(IconScoreBase):
 # ======================== Get info about funds =========================
 
     @external(readonly=True)
-    def get_total_delegation(self) -> int:
-        return self._total_delegation.get()
+    def get_total_delegation(self) -> dict:
+        return self._system_score.getDelegation(self.address)
+
+    @external(readonly=True)
+    def get_total_staked(self) -> dict:
+        return self._system_score.getStake(self.address)
 
     @external(readonly=True)
     def get_rewards_rates(self) -> list:
