@@ -67,9 +67,9 @@ class Staking(IconScoreBase):
             else:
                 break
         
-        # Delete all succesful payouts
-        for id in node_ids_traversed:
-            self._payout_queue.remove(id)
+        ## Delete all succesful payouts
+        #for id in node_ids_traversed:
+        #    self._payout_queue.remove(id)
 
     @external
     def claim_iscore(self) -> None:
