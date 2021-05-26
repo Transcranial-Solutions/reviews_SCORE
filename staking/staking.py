@@ -55,7 +55,7 @@ class Staking(IconScoreBase):
 
     @external
     def payout_funds(self): 
-        unlocked_funds = self._get_unlocked_funds()        
+        unlocked_funds = self.icx.get_balance(self.address)       
         
         for entry in self._payout_queue:
             entry = json_loads(entry[1])
@@ -157,9 +157,6 @@ class Staking(IconScoreBase):
         }
         delegations.append(delegation)
         return delegations
-
-    def _get_unlocked_funds(self):
-        return self.icx.get_balance(self.address) - self._total_delegation.get()
     
     def _only_review_contract(self) -> None:
         if not self.msg.sender == self._review_score.get():
