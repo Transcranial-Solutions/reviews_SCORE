@@ -89,11 +89,12 @@ class Staking(IconScoreBase):
         return self._system_score.queryIScore(self.address)['iscore']
 
     @external(readonly=True)
-    def dipsplay_payout_queue(self) -> int:
+    def dipsplay_payout_queue(self) -> list:
         queue = []
         for entry in self._payout_queue:
             entry = json_loads(entry[1])
             queue.append(entry)
+        return queue
 
     
 
