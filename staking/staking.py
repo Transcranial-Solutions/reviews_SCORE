@@ -59,7 +59,7 @@ class Staking(IconScoreBase):
         
         node_ids_traversed = []
         for entry in self._payout_queue:
-            data = json_loads(data[1])
+            data = json_loads(entry[1])
 
             if data['amount'] <= unlocked_funds:
                 self.icx.transfer(Address.from_string(data['address']), data['amount'])
