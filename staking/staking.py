@@ -58,10 +58,11 @@ class Staking(IconScoreBase):
         unlocked_funds = self._get_unlocked_funds()        
         
         for entry in self._payout_queue:
-            entry = json_loads(entry)
+            entry = json_loads(entry[1])
 
-            if entry['value'] <= unlocked_funds:
-                self.icx.transfer(Address.from_string(entry['address']), entry['value'])
+            if entry['amount'] <= unlocked_funds:
+                self.icx.transfer(Address.from_string(entry['address']), entry['amount'])
+                self._payout_queue.remove_head()
             
             else:
                 break
