@@ -91,7 +91,7 @@ class Staking(IconScoreBase):
 
     @external(readonly=True)
     def queryIscore(self) -> dict:
-        return self._system_score.queryIScore(self.address)
+        return self._system_score.queryIScore(self.address)['iscore']
 
     @external(readonly=True)
     def dipsplay_payout_queue(self) -> list:
@@ -102,8 +102,8 @@ class Staking(IconScoreBase):
         return queue
 
     @external(readonly=True)
-    def get_unlocked_funds(self) -> list:
-        return [self.icx.get_balance(self.address) - self._total_delegation.get(), self.icx.get_balance(self.address)]
+    def get_unlocked_funds(self) -> int:
+        return self.icx.get_balance(self.address)
     
 
 # ======================== Get info about funds =========================
