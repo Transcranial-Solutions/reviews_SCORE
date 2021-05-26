@@ -83,6 +83,11 @@ class Staking(IconScoreBase):
         reward_rate = self._compute_reward_rate(loop_claimed)
         self._add_reward_rate(reward_rate)
 
+    @external(readonly=True)
+    def queryIscore(self) -> int:
+        return self._system_score.queryIScore(self.address)['iscore']
+    
+
 # ======================== Get info about funds =========================
 
     @external(readonly=True)
