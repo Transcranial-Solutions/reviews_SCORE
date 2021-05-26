@@ -90,7 +90,7 @@ class Staking(IconScoreBase):
         self._add_reward_rate(reward_rate)
 
     @external(readonly=True)
-    def queryIscore(self) -> int:
+    def queryIscore(self) -> dict:
         return self._system_score.queryIScore(self.address)
 
     @external(readonly=True)
