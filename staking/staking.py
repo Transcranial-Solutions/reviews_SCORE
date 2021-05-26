@@ -87,6 +87,14 @@ class Staking(IconScoreBase):
     @external(readonly=True)
     def queryIscore(self) -> int:
         return self._system_score.queryIScore(self.address)['iscore']
+
+    @external(readonly=True)
+    def dipsplay_payout_queue(self) -> int:
+        queue = []
+        for entry in self._payout_queue:
+            entry = json_loads(entry[1])
+            queue.append(entry)
+
     
 
 # ======================== Get info about funds =========================
