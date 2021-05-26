@@ -16,7 +16,6 @@ class Staking(IconScoreBase):
 
     def __init__(self, db: IconScoreDatabase) -> None:
         super().__init__(db)
-        self._total_delegation = VarDB("_total_delegation", db, value_type=int)
         self._reward_rates = ArrayDB("_reward_rates", db, value_type=str)
         self._payout_queue = LinkedListDB("_payout_queue", db, value_type=str)
         
@@ -68,7 +67,7 @@ class Staking(IconScoreBase):
             else:
                 break
         
-        # Delete all succesful payouts
+        # Delete all successful payouts
         for id in node_ids_traversed:
             self._payout_queue.remove(id)
 
@@ -109,12 +108,12 @@ class Staking(IconScoreBase):
 # ======================== Get info about funds =========================
 
     @external(readonly=True)
-    def get_total_delegation(self) -> dict:
-        return self._system_score.getDelegation(self.address)
+    def get_total_delegation(self) -> int:
+        return self._system_score.getDelegation(self.address)['totalDelegated']
 
     @external(readonly=True)
-    def get_total_staked(self) -> dict:
-        return self._system_score.getStake(self.address)
+    def get_total_staked(self) -> int:
+        return self._system_score.getStake(self.address)['stake']
 
     @external(readonly=True)
     def get_rewards_rates(self) -> list:
@@ -126,7 +125,7 @@ class Staking(IconScoreBase):
 # ============================= Helpers =====================================
 
     def _compute_reward_rate(self, loop: int) -> float:
-        return loop / self._total_delegation.get()
+        return loop / self._system_score.getDelegation(self.address)['totalDelegated']
 
     def _add_reward_rate(self, reward_rate: float) -> None:
         reward_rate = {
@@ -147,16 +146,14 @@ class Staking(IconScoreBase):
         return total_rewards
 
     def _increment_funds(self, value: int):
-        new_amount = self._total_delegation.get() + value
+        new_amount = self._system_score.getDelegation(self.address)['totalDelegated'] + value
         self._system_score.setStake(new_amount)
         self._system_score.setDelegation(self._create_delegation(new_amount))
-        self._total_delegation.set(new_amount)
 
     def _decrement_funds(self, value: int):
-        new_amount = self._total_delegation.get() - value
+        new_amount = self._system_score.getDelegation(self.address)['totalDelegated'] - value
         self._system_score.setDelegation(self._create_delegation(new_amount))
         self._system_score.setStake(new_amount)
-        self._total_delegation.set(new_amount)
 
     def _create_delegation(self, value: int) -> None:
         delegations = []
