@@ -57,16 +57,20 @@ class Staking(IconScoreBase):
     def payout_funds(self): 
         unlocked_funds = self.icx.get_balance(self.address)       
         
+        node_ids_traversed = []
         for entry in self._payout_queue:
             entry = json_loads(entry[1])
 
             if entry['amount'] <= unlocked_funds:
                 self.icx.transfer(Address.from_string(entry['address']), entry['amount'])
-                self._payout_queue.remove_head()
-            
+                node_ids_traversed.append(entry[0])
             else:
                 break
         
+        # Delete all succesful payouts
+        for id in node_ids_traversed:
+            self._payout_queue.remove(id)
+
     @external
     def claim_iscore(self) -> None:
         iscore = self._system_score.queryIScore(self.address)['iscore']
