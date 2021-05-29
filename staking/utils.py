@@ -1,3 +1,3 @@
 
-def iscore_to_loop(iscore: int) -> None:
-        return iscore * 10 ** 15
+def iscore_to_loop(iscore: int) -> int:
+        return iscore // 1000

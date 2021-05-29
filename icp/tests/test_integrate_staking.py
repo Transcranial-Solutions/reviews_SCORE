@@ -27,25 +27,5 @@ class TestTest(IconIntegrateTestBase):
         # install SCORE
         self._score_address = self._deploy_score()['scoreAddress']
 
-    def _deploy_score(self, to: str = SCORE_INSTALL_ADDRESS) -> dict:
-        # Generates an instance of transaction for deploying SCORE.
-        transaction = DeployTransactionBuilder()             .from_(self._test1.get_address())             .to(to)             .step_limit(100_000_000_000)             .nid(3)             .nonce(100)             .content_type("application/zip")             .content(gen_deploy_data_content(self.SCORE_PROJECT))             .build()
-
-        # Returns the signed transaction object having a signature
-        signed_transaction = SignedTransaction(transaction, self._test1)
-
-        # process the transaction in local
-        tx_result = self.process_transaction(signed_transaction, self.icon_service)
-
-        self.assertEqual(True, tx_result['status'])
-        self.assertTrue('scoreAddress' in tx_result)
-
-        return tx_result
-
-    def test_score_update(self):
-        # update SCORE
-        tx_result = self._deploy_score(self._score_address)
-
-        self.assertEqual(self._score_address, tx_result['scoreAddress'])
 
 
