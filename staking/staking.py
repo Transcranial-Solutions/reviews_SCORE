@@ -79,14 +79,14 @@ class Staking(IconScoreBase):
             revert('No iscore to claim.')
 
         self._system_score.claimIScore()
-        loop_claimed = iscore_to_loop(iscore)
+        #loop_claimed = iscore_to_loop(iscore)
 
-        # Restake and redelegate new amounts.
-        self._increment_funds(loop_claimed)
+        ## Restake and redelegate new amounts.
+        #self._increment_funds(loop_claimed)
 
-        # Compute and add reward rate.
-        reward_rate = self._compute_reward_rate(loop_claimed)
-        self._add_reward_rate(reward_rate)
+        ## Compute and add reward rate.
+        #reward_rate = self._compute_reward_rate(loop_claimed)
+        #self._add_reward_rate(reward_rate)
 
     @external(readonly=True)
     def queryIscore(self) -> int:
