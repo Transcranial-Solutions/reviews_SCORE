@@ -89,8 +89,8 @@ class Staking(IconScoreBase):
         #self._add_reward_rate(reward_rate)
 
     @external(readonly=True)
-    def queryIscore(self) -> int:
-        return self._system_score.queryIScore(self.address)['iscore']
+    def queryIscore(self) -> dict:
+        return self._system_score.queryIScore(self.address)
 
     @external(readonly=True)
     def dipsplay_payout_queue(self) -> list:
