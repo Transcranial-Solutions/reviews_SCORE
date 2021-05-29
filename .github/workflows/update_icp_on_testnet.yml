@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Update staking on testnet
+name: Update transcranial_token on testnet
 
 # Controls when the action will run. 
 on:
