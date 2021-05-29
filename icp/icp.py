@@ -14,7 +14,7 @@ from .token_standards import IRC2TokenStandard
 from .interfaces.tokenfallback import TokenFallbackInterface
 from .scorlib.bag import BagDB
 
-class Icp(IconScoreBase, IRC2TokenStandard):
+class TranscranialToken(IconScoreBase, IRC2TokenStandard):
 
     def __init__(self, db: IconScoreDatabase) -> None:
         super().__init__(db)
@@ -26,8 +26,12 @@ class Icp(IconScoreBase, IRC2TokenStandard):
         self._total_supply = VarDB("total_supply", db, value_type=int)
         self._balances = DictDB("balances", db, value_type=int)
 
-        # Minting functionality.
+        # Mint and burn permissions.
         self._minters = BagDB("minters", db, value_type=Address)
+        self._burners = BagDB("burners", db, value_type=Address)
+
+        # Admin address.
+        self._admin = VarDB("admin", db, value_type=Address)
 
     def on_install(self, _name: str, _symbol: str, _decimals: int, _initialSupply: int) -> None:
         super().on_install()
@@ -71,35 +75,92 @@ class Icp(IconScoreBase, IRC2TokenStandard):
         return self._balances[_owner]
 
     @external(readonly=True)
+    def get_admin(self) -> Address:
+        return self._admin.get()
+
+    @external
+    def set_admin(self, _address: Address) -> None:
+        if self.msg.sender != self.owner:
+            revert("Only owner can set admin.")
+        self._admin.set(_address)
+
+    @external(readonly=True)
     def get_minters(self) -> list:
         minters = []
         for minter in self._minters:
             minters.append(minter)
         return minters
     
-    @external(readonly=True)
+    @external
     def add_minter(self, _minter: Address) -> None:
-        if not self.msg.sender == self.owner:
-            revert("Only owner can assign minters.")
+        if not self.msg.sender == self._admin.get():
+            revert("Only admin can assign minters.")
         self._minters.add(_minter)
 
     @external
     def remove_minter(self, _minter: Address) -> None:
-        if not self.msg.sender == self.owner:
-            revert("Only owner can remove minters.")
-        self._minters.remove(_minter)
+        if not self.msg.sender == self._admin.get():
+            revert("Only admin can remove minters.")
+        self._burners.remove(_minter)
+    
+    @external(readonly=True)
+    def get_burners(self) -> list:
+        burners = []
+        for burner in self._burners:
+            burners.append(burner)
+        return burners
+    
+    @external
+    def add_burner(self, _burner: Address) -> None:
+        if not self.msg.sender == self._admin.get():
+            revert("Only admin can assign minters.")
+        self._burners.add(_burner)
 
     @external
-    def mint(self, _to: Address, _amount: int, _data: bytes = None):
+    def remove_burner(self, _burner: Address) -> None:
+        if not self.msg.sender == self._admin.get():
+            revert("Only admin can remove minters.")
+        self._burners.remove(_burner)
+
+    @external
+    def mint(self, _amount: int, _data: bytes = None):
+        if not self.msg.sender in self._minters:
+            revert("Only minters can mint tokens.")
         if _data is None:
             _data = b'None'
         self._mint(self.msg.sender, _amount, _data)
+    
+    @external
+    def burn(self, _amount: int) -> None:
+        if not self.msg.sender in self._burners:
+            revert("Only burners can burn tokens.")
+        self._burn(self.msg.sender, _amount)
 
     @external
     def transfer(self, _to: Address, _value: int, _data: bytes = None):
         if _data is None:
             _data = b'None'
         self._transfer(self.msg.sender, _to, _value, _data)
+
+    # ================================================================================================
+    # Eventlogs
+    # ================================================================================================
+
+    @eventlog(indexed=3)
+    def Transfer(self, _from: Address, _to: Address, _value: int, _data: bytes):
+        pass
+
+    @eventlog(indexed=3)
+    def Mint(self, _to: Address, amount: int, _data: bytes):
+        pass
+
+    @eventlog(indexed=2)
+    def Burn(self, account: Address, amount: int) -> None:
+        pass
+
+    # ================================================================================================
+    # Internal methods
+    # ================================================================================================
     
     def _transfer(self, _from: Address, _to: Address, _value: int, _data: bytes):
 
@@ -123,12 +184,9 @@ class Icp(IconScoreBase, IRC2TokenStandard):
 
     def _mint(self, _to: Address, _amount: int, _data: bytes) -> None:
         
-        if _amount <= 0:
+        if _amount < 0:
             revert("Minting amount must be larger than zero.")
 
-        if self.msg.sender not in self._minters:
-            revert("Sender is not an assigned minter.")
-        
         self._balances[_to] += _amount
         self._total_supply.set(self._total_supply.get() + _amount)
 
@@ -136,12 +194,14 @@ class Icp(IconScoreBase, IRC2TokenStandard):
             recipient_score = self.create_interface_score(ZERO_SCORE_ADDRESS, TokenFallbackInterface)
             recipient_score.tokenFallback(ZERO_SCORE_ADDRESS, _amount, _data)
 
-    # ================================== Eventlogs ====================================
+    def _burn(self, account: Address, amount: int) -> None:
+        
+        if amount <= 0:
+            revert('Amount of tokens to burn must be > 0.')
 
-    @eventlog(indexed=3)
-    def Transfer(self, _from: Address, _to: Address, _value: int, _data: bytes):
-        pass
+        self._total_supply.set(self._total_supply.get() - amount)
+        self._balances[account] -= amount
 
-    @eventlog(indexed=3)
-    def Mint(self, _to: Address, amount: int, _data: bytes):
-        pass
+        # Emit eventlogs.
+        self.Burn(account, amount)
+        self.Transfer(account, ZERO_SCORE_ADDRESS, amount, b'None')
