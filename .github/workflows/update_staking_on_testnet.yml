@@ -25,4 +25,5 @@ jobs:
           private_key: ${{ secrets.TESTNET_PRIVATE_KEY }}
         run: |
           python -c "import os;from iconsdk.wallet.wallet import KeyWallet;KeyWallet.load(bytes.fromhex(os.getenv('private_key'))).store('key.store', os.getenv('pw'))"
+          
           tbears deploy -u https://bicon.net.solidwallet.io/api/v3 -m update staking -k key.store -p $pw -o cx1309b6e0566789c0aa9c625cdf916296b0a3918d

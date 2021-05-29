@@ -7,7 +7,6 @@ reviews/__pycache__/
 reviews/interfaces/__pycache__/
 reviews/scorelib/__pycache__/
 reviews/tests/__pycache__/
-<<<<<<< HEAD
 .testscore/010000000000000000000000000000000000000000/0x0000000000000000000000000000000000000000000000000000000000000000/__init__.py
 .testscore/010000000000000000000000000000000000000000/0x0000000000000000000000000000000000000000000000000000000000000000/package.json
 .testscore/010000000000000000000000000000000000000000/0x0000000000000000000000000000000000000000000000000000000000000000/system.py
@@ -87,10 +86,10 @@ reviews/.devcontainer/Dockerfile
 .testscore/017a5529fe4e1c3f95c18cf16f0e5fda1adeb655d5/0x67e5a57586c4b8fae952fc7e0ebb22f579887cbf0574bbf56eb33877d24ee745/scorelib/bag.py
 .testscore/017a5529fe4e1c3f95c18cf16f0e5fda1adeb655d5/0x67e5a57586c4b8fae952fc7e0ebb22f579887cbf0574bbf56eb33877d24ee745/scorelib/checks.py
 .testscore/017a5529fe4e1c3f95c18cf16f0e5fda1adeb655d5/0x67e5a57586c4b8fae952fc7e0ebb22f579887cbf0574bbf56eb33877d24ee745/scorelib/keydb.py
-=======
+
 staking/__pycache__/
 staking/interfaces/__pycache__/
 staking/scorelib/__pycache__/
-staking/tests/__pycache__/
 staking/tests/__pycache__/test_unit_staking.cpython-37.pyc
->>>>>>> 54b39b3ac368a4eeed7792ec3395109f07b8d7b0
+staking/tests/__pycache__/
+
