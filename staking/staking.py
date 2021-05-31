@@ -88,7 +88,7 @@ class Staking(IconScoreBase):
         iscore = self._system_score.queryIScore(self.address)['iscore']
         
         if iscore < 1000:
-            revert('There is no loop to be claimed.')
+            revert('There is not enough iscore to convert to a full loop.')
 
         self._system_score.claimIScore()
         loop_claimed = iscore_to_loop(iscore)
