@@ -87,7 +87,7 @@ class Staking(IconScoreBase):
     def claim_iscore(self) -> None:
         iscore = self._system_score.queryIScore(self.address)['iscore']
         
-        if not iscore < 1000:
+        if iscore < 1000:
             revert('There is no loop to be claimed.')
 
         self._system_score.claimIScore()
