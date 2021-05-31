@@ -20,7 +20,7 @@ from .interfaces.system_score import SystemScoreInterface
 from .scorelib.constants import Score, Prep
 from .scorelib.linked_list import LinkedListDB
 
-from .utils import iscore_to_loop
+from .utils import iscore_to_loop, floor
 
 TAG = 'Staking'
 
@@ -137,7 +137,7 @@ class Staking(IconScoreBase):
 # ============================= Helpers =====================================
 
     def _compute_reward_rate(self, loop: int) -> float:
-        return loop / self._system_score.getDelegation(self.address)['totalDelegated']
+        return floor(loop / self._system_score.getDelegation(self.address)['totalDelegated'], 18) 
 
     def _add_reward_rate(self, reward_rate: float) -> None:
         reward_rate = {
