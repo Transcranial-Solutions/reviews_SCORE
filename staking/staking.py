@@ -1,13 +1,25 @@
 from iconservice import (
-    IconScoreBase, IconScoreDatabase, ArrayDB, VarDB, payable,
-    Address, external, json_dumps, json_loads, revert, sha3_256, 
-    sha_256, create_address_with_key, recover_key
+    IconScoreBase,
+    IconScoreDatabase,
+    ArrayDB,
+    VarDB, 
+    payable,
+    Address, 
+    external, 
+    json_dumps, 
+    json_loads, 
+    revert, 
+    sha3_256, 
+    sha_256, 
+    create_address_with_key, 
+    recover_key
 )
 
 from .interfaces.system_score import SystemScoreInterface
 
 from .scorelib.constants import Score, Prep
 from .scorelib.linked_list import LinkedListDB
+
 from .utils import iscore_to_loop
 
 TAG = 'Staking'
@@ -75,18 +87,18 @@ class Staking(IconScoreBase):
     def claim_iscore(self) -> None:
         iscore = self._system_score.queryIScore(self.address)['iscore']
         
-        if not iscore:
-            revert('No iscore to claim.')
+        if not iscore < 1000:
+            revert('There is no loop to be claimed.')
 
         self._system_score.claimIScore()
-        #loop_claimed = iscore_to_loop(iscore)
+        loop_claimed = iscore_to_loop(iscore)
 
-        ## Restake and redelegate new amounts.
-        #self._increment_funds(loop_claimed)
+        # Restake and redelegate new amounts.
+        self._increment_funds(loop_claimed)
 
-        ## Compute and add reward rate.
-        #reward_rate = self._compute_reward_rate(loop_claimed)
-        #self._add_reward_rate(reward_rate)
+        # Compute and add reward rate.
+        reward_rate = self._compute_reward_rate(loop_claimed)
+        self._add_reward_rate(reward_rate)
 
     @external(readonly=True)
     def queryIscore(self) -> dict:
