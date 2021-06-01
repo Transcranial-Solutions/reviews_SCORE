@@ -19,7 +19,6 @@ from .interfaces.staking_score import StakingScoreInterface
 
 TAG = "Reviews"
 
-
 class Reviews(IconScoreBase):
     def __init__(self, db: IconScoreDatabase) -> None:
         super().__init__(db)
