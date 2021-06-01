@@ -115,9 +115,6 @@ class Staking(IconScoreBase):
     @external(readonly=True)
     def get_unlocked_funds(self) -> int:
         return self.icx.get_balance(self.address)
-    
-
-# ======================== Get info about funds =========================
 
     @external(readonly=True)
     def get_total_delegated(self) -> int:
@@ -134,7 +131,9 @@ class Staking(IconScoreBase):
             reward_rates.append(json_loads(reward_rate))
         return reward_rates
 
-# ============================= Helpers =====================================
+    # ================================================================================================
+    # Internal methods
+    # ================================================================================================
 
     def _compute_reward_rate(self, loop: int) -> float:
         return floor(loop / self._system_score.getDelegation(self.address)['totalDelegated'], 18) 
