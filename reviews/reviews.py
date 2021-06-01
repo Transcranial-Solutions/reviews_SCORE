@@ -114,6 +114,10 @@ class Reviews(IconScoreBase):
         review = self._review_handler.get_review(guid)
         return review.to_dict()
 
+    @external(readonly=True)
+    def get_current_timestamp(self) -> int:
+        return self.now()
+
     # ========  Helpers =========
 
     def _compute_review_hash(
