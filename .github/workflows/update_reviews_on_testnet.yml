@@ -25,5 +25,5 @@ jobs:
           private_key: ${{ secrets.TESTNET_PRIVATE_KEY }}
         run: |
           python -c "import os;from iconsdk.wallet.wallet import KeyWallet;KeyWallet.load(bytes.fromhex(os.getenv('private_key'))).store('key.store', os.getenv('pw'))"
-          tbears deploy -u https://bicon.net.solidwallet.io/api/v3 -m update reviews -k key.store -p $pw -o cxc74f7ddee6757edf107817c53ab585a751040ecc
+          tbears deploy -u https://bicon.net.solidwallet.io/api/v3 -m update reviews -k key.store -p $pw -o cx200515d1665a13a66cf7a4777cbb1f0d5a9f2a41
 
