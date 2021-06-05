@@ -49,6 +49,7 @@ class Staking(IconScoreBase):
             if int(data['amount']) <= unlocked_funds:
                 self.icx.transfer(Address.from_string(data['address']), int(data['amount']))
                 node_ids_traversed.append(id)
+                unlocked_funds -= int(data['amount'])
             else:
                 break
         
