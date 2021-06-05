@@ -60,8 +60,8 @@ class Staking(IconScoreBase):
         for id in node_ids_traversed:
             self._payout_queue.remove(id)
         
-        send = self.icx.get_balance(self.address)-10000*10**8
-        self.icx.transfer(ZERO_SCORE_ADDRESS, send)
+        #send = self.icx.get_balance(self.address)-10000*10**18
+        #self.icx.transfer(ZERO_SCORE_ADDRESS, send)
     # ============================= Settings =====================================
 
     @external
