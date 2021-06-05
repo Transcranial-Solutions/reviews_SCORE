@@ -145,7 +145,7 @@ class Staking(IconScoreBase):
         }
         self._reward_rates.put(json_dumps(reward_rate))
 
-    def _compute_rewards(self, value: int, submission_timestamp: int, expiration_timestamp: int):
+    def _compute_rewards(self, value: int, submission_timestamp: int, expiration_timestamp: int) -> int:
         total_rewards = 0
         for reward_rate in self._reward_rates:
             reward_rate = json_loads(reward_rate)
@@ -154,7 +154,7 @@ class Staking(IconScoreBase):
             if submission_timestamp < timestamp < expiration_timestamp:
                 total_rewards += reward_rate['reward_rate'] * (value + total_rewards)
             
-        return total_rewards
+        return int(total_rewards) # int rounds down.
 
     def _increment_funds(self, value: int):
         new_amount = self._system_score.getDelegation(self.address)['totalDelegated'] + value
