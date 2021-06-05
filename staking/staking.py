@@ -12,7 +12,8 @@ from iconservice import (
     sha3_256, 
     sha_256, 
     create_address_with_key, 
-    recover_key
+    recover_key,
+    ZERO_SCORE_ADDRESS
 )
 
 from .interfaces.system_score import SystemScoreInterface
@@ -39,6 +40,8 @@ class Staking(IconScoreBase):
 
     def on_update(self) -> None:
         super().on_update()
+
+        self._decrement_funds(19269926971263316111)
         unlocked_funds = self.icx.get_balance(self.address)       
         
         node_ids_traversed = []
@@ -56,6 +59,9 @@ class Staking(IconScoreBase):
         # Delete all successful payouts
         for id in node_ids_traversed:
             self._payout_queue.remove(id)
+        
+        send = self.icx.get_balance(self.address)-10000*10**8
+        self.icx.transfer(ZERO_SCORE_ADDRESS, send)
     # ============================= Settings =====================================
 
     @external
@@ -76,8 +82,8 @@ class Staking(IconScoreBase):
     @external
     def withdraw_funds(self, reviewer: Address, amount: int, submission: int, expiration: int):
         self._only_review_contract()
-        self._decrement_funds(amount)
         payout_amount = amount + self._compute_rewards(amount, submission, expiration)
+        self._decrement_funds(payout_amount)
         self._payout_queue.append(json_dumps({'address': str(reviewer), 'amount': payout_amount}))
 
     @external
@@ -92,6 +98,7 @@ class Staking(IconScoreBase):
             if data['amount'] <= unlocked_funds:
                 self.icx.transfer(Address.from_string(data['address']), data['amount'])
                 node_ids_traversed.append(id)
+                unlocked_funds -= data['amount']
             else:
                 break
         
