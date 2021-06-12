@@ -76,6 +76,14 @@ class Reviews(IconScoreBase):
         review.remove()
 
     @external()
+    def remove_reviews(self, guids: list):
+        """
+        Removes specified reviews and withdraw funds from staking contract.
+        """
+        for guid in guids:
+            self.remove_review(guid)
+
+    @external()
     def edit_review(self):
         pass
 
