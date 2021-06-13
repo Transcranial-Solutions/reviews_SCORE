@@ -37,11 +37,11 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
         super().on_install()
 
         if _initialSupply < 0:
-            revert("Initial supply cannot be less than zero.")
+            revert("Initial supply can't be less than zero.")
         if _decimals < 0:
-            revert("Decimals cannot be less than zero.")
+            revert("Decimals can't be less than zero.")
         if _decimals > 21:
-            revert("Decimals cannot be more than 21.")
+            revert("Decimals can't be more than 21.")
 
         total_supply = _initialSupply * 10 ** _decimals
 
@@ -93,53 +93,50 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
     
     @external
     def add_minter(self, _minter: Address) -> None:
-        if not self.msg.sender == self._admin.get():
+        if self.msg.sender != self._admin.get():
             revert("Only admin can assign minters.")
         self._minters.add(_minter)
 
-    @external
-    def remove_minter(self, _minter: Address) -> None:
-        if not self.msg.sender == self._admin.get():
-            revert("Only admin can remove minters.")
-        self._burners.remove(_minter)
-    
     @external(readonly=True)
     def get_burners(self) -> list:
         burners = []
         for burner in self._burners:
             burners.append(burner)
         return burners
+
+    @external
+    def remove_minter(self, _minter: Address) -> None:
+        if self.msg.sender != self._admin.get():
+            revert("Only admin can remove minters.")
+        self._burners.remove(_minter)
     
+
     @external
     def add_burner(self, _burner: Address) -> None:
-        if not self.msg.sender == self._admin.get():
+        if self.msg.sender != self._admin.get():
             revert("Only admin can assign minters.")
         self._burners.add(_burner)
 
     @external
     def remove_burner(self, _burner: Address) -> None:
-        if not self.msg.sender == self._admin.get():
+        if self.msg.sender != self._admin.get():
             revert("Only admin can remove minters.")
         self._burners.remove(_burner)
 
     @external
-    def mint(self, _amount: int, _data: bytes = None):
+    def mint(self, _amount: int, _data: bytes = b'None'):
         if not self.msg.sender in self._minters:
             revert("Only minters can mint tokens.")
-        if _data is None:
-            _data = b'None'
         self._mint(self.msg.sender, _amount, _data)
     
     @external
-    def burn(self, _amount: int) -> None:
+    def burn(self, _amount: int, _data: bytes = b'None') -> None:
         if not self.msg.sender in self._burners:
             revert("Only burners can burn tokens.")
-        self._burn(self.msg.sender, _amount)
+        self._burn(self.msg.sender, _amount, _data)
 
     @external
-    def transfer(self, _to: Address, _value: int, _data: bytes = None):
-        if _data is None:
-            _data = b'None'
+    def transfer(self, _to: Address, _value: int, _data: b'None'):
         self._transfer(self.msg.sender, _to, _value, _data)
 
     # ================================================================================================
@@ -155,7 +152,7 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
         pass
 
     @eventlog(indexed=2)
-    def Burn(self, account: Address, amount: int) -> None:
+    def Burn(self, account: Address, amount: int):
         pass
 
     # ================================================================================================
@@ -170,12 +167,11 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
         if self._balances[_from] < _value:
             revert("Out of balance.")
 
-        self._balances[_from] = self._balances[_from] - _value
-        self._balances[_to] = self._balances[_to] + _value
+        self._balances[_from] -= _value
+        self._balances[_to] += _value
 
         if _to.is_contract:
-            # If the recipient is SCORE,
-            # then calls `tokenFallback` to hand over control.
+            # If recipient is contract. Call that contracts tokenfallback function.
             recipient_score = self.create_interface_score(_to, TokenFallbackInterface)
             recipient_score.tokenFallback(_from, _value, _data)
 
@@ -185,23 +181,29 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
     def _mint(self, _to: Address, _amount: int, _data: bytes) -> None:
         
         if _amount < 0:
-            revert("Minting amount must be larger than zero.")
+            revert("Mint amount must be larger than zero.")
 
         self._balances[_to] += _amount
         self._total_supply.set(self._total_supply.get() + _amount)
 
         if _to.is_contract:
-            recipient_score = self.create_interface_score(ZERO_SCORE_ADDRESS, TokenFallbackInterface)
+            recipient_score = self.create_interface_score(_to, TokenFallbackInterface)
             recipient_score.tokenFallback(ZERO_SCORE_ADDRESS, _amount, _data)
 
-    def _burn(self, account: Address, amount: int) -> None:
+        self.Transfer(ZERO_SCORE_ADDRESS, _to, _amount, _data)
+        self.Mint(_to, _amount, _data)
         
-        if amount <= 0:
-            revert('Amount of tokens to burn must be > 0.')
+    def _burn(self, _from: Address, _amount: int, _data: bytes) -> None:
+        
+        if _amount <= 0:
+            revert("Burn amount must be larger than zero.")
 
-        self._total_supply.set(self._total_supply.get() - amount)
-        self._balances[account] -= amount
+        if _amount > self._balances[_from]:
+            revert("Burn amount larger than available balance.")
+
+        self._total_supply.set(self._total_supply.get() - _amount)
+        self._balances[_from] -= _amount
 
         # Emit eventlogs.
-        self.Burn(account, amount)
-        self.Transfer(account, ZERO_SCORE_ADDRESS, amount, b'None')
+        self.Burn(_from, _amount)
+        self.Transfer(_from, ZERO_SCORE_ADDRESS, _amount, _data)
