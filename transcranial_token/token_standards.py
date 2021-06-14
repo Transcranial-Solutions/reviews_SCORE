@@ -1,5 +1,6 @@
 from iconservice import (
     ABC,
+    ABCMeta,
     abstractmethod,
     Address
 )
