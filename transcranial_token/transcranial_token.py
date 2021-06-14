@@ -124,13 +124,13 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
         self._burners.remove(_burner)
 
     @external
-    def mint(self, _amount: int, _data: bytes = b'None'):
+    def mint(self, _to: Address, _amount: int, _data: bytes = b'None'):
         if not self.msg.sender in self._minters:
             revert("Only minters can mint tokens.")
-        self._mint(self.msg.sender, _amount, _data)
+        self._mint(_to, _amount, _data)
     
     @external
-    def burn(self, _amount: int, _data: bytes = b'None') -> None:
+    def burn(self, _from: Address, _amount: int, _data: bytes = b'None') -> None:
         if not self.msg.sender in self._burners:
             revert("Only burners can burn tokens.")
         self._burn(self.msg.sender, _amount, _data)
@@ -151,8 +151,8 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
     def Mint(self, _to: Address, amount: int, _data: bytes):
         pass
 
-    @eventlog(indexed=2)
-    def Burn(self, account: Address, amount: int):
+    @eventlog(indexed=3)
+    def Burn(self, _from: Address, _amount: int, _data: bytes):
         pass
 
     # ================================================================================================
@@ -205,5 +205,5 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
         self._balances[_from] -= _amount
 
         # Emit eventlogs.
-        self.Burn(_from, _amount)
+        self.Burn(_from, _amount, _data)
         self.Transfer(_from, ZERO_SCORE_ADDRESS, _amount, _data)
