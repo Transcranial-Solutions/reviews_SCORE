@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Deploy transcranial_token to testnet
+name: Deploy token to testnet
 
 # Controls when the action will run. 
 on:
@@ -25,4 +25,4 @@ jobs:
           private_key: ${{ secrets.TESTNET_PRIVATE_KEY }}
         run: |
           python -c "import os;from iconsdk.wallet.wallet import KeyWallet;KeyWallet.load(bytes.fromhex(os.getenv('private_key'))).store('key.store', os.getenv('pw'))"
-          tbears deploy -u https://bicon.net.solidwallet.io/api/v3 -m update icp -k key.store -p $pw
+          tbears deploy -u https://bicon.net.solidwallet.io/api/v3 -m update TranscranialToken -k key.store -p $pw
