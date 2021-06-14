@@ -1,9 +1,4 @@
-from iconservice import (
-    ABC,
-    ABCMeta,
-    abstractmethod,
-    Address
-)
+from iconservice import *
 
 class IRC2TokenStandard(ABC):
     @abstractmethod
