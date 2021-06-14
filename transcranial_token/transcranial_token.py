@@ -136,7 +136,7 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
         self._burn(self.msg.sender, _amount, _data)
 
     @external
-    def transfer(self, _to: Address, _value: int, _data: b'None'):
+    def transfer(self, _to: Address, _value: int, _data: bytes = b'None'):
         self._transfer(self.msg.sender, _to, _value, _data)
 
     # ================================================================================================
