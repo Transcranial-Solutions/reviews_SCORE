@@ -26,4 +26,4 @@ jobs:
         run: |
           python -c "import os;from iconsdk.wallet.wallet import KeyWallet;KeyWallet.load(bytes.fromhex(os.getenv('private_key'))).store('key.store', os.getenv('pw'))"
           
-          tbears deploy -u https://bicon.net.solidwallet.io/api/v3 -m update transcranial_token -k key.store -p $pw -o CONTRACT HERE
+          tbears deploy -u https://bicon.net.solidwallet.io/api/v3 -m update transcranial_token -k key.store -p $pw -o cx7b26fa8ce9e26c67efc52b10602bbfa268248ef9
