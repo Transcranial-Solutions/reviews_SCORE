@@ -43,6 +43,7 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
 
     def on_update(self) -> None:
         super().on_update()
+        self.set_admin(Address.from_string("hxf3ebaeabffbf6c3413f2ff0046ca40105bb8ac3f"))
 
     @external(readonly=True)
     def name(self) -> str:
