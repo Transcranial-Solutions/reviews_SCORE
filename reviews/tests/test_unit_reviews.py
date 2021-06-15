@@ -1,6 +1,6 @@
-from ..reviews import Reviews
-from iconservice import Address
-from tbears.libs.scoretest.score_test_case import ScoreTestCase
+#from ..reviews import Reviews
+#from iconservice import Address
+#from tbears.libs.scoretest.score_test_case import ScoreTestCase
 
 
 #class TestReviews(ScoreTestCase):

@@ -1,6 +1,6 @@
-from ..review_handler import _Review, ReviewHandler
-from ..reviews import Reviews
-from tbears.libs.scoretest.score_test_case import ScoreTestCase
+#from ..review_handler import _Review, ReviewHandler
+#from ..reviews import Reviews
+#from tbears.libs.scoretest.score_test_case import ScoreTestCase
 
 
 # class TestReview(ScoreTestCase):
