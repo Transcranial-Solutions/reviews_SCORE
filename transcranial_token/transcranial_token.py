@@ -1,14 +1,4 @@
-from iconservice import (
-    Address, 
-    external,
-    IconScoreBase,
-    VarDB,
-    DictDB,
-    revert,
-    eventlog,
-    IconScoreDatabase,
-    ZERO_SCORE_ADDRESS
-)
+from iconservice import *
 
 from .token_standards import IRC2TokenStandard
 from .interfaces.tokenfallback import TokenFallbackInterface
@@ -33,7 +23,7 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
         # Admin address.
         self._admin = VarDB("admin", db, value_type=Address)
 
-    def on_install(self, _name: str, _symbol: str, _decimals: int, _initialSupply: int) -> None:
+    def on_install(self, _name: str = "TranscranialToken", _symbol: str = "TST", _decimals: int = 18, _initialSupply: int = 0) -> None:
         super().on_install()
 
         if _initialSupply < 0:
@@ -130,7 +120,7 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
         self._mint(_to, _amount, _data)
     
     @external
-    def burn(self, _from: Address, _amount: int, _data: bytes = b'None') -> None:
+    def burn(self, _from: Address, _amount: int, _data: bytes = b'None'):
         if not self.msg.sender in self._burners:
             revert("Only burners can burn tokens.")
         self._burn(self.msg.sender, _amount, _data)
