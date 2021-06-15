@@ -100,7 +100,6 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
         if self.msg.sender != self._admin.get():
             revert("Only admin can remove minters.")
         self._burners.remove(_minter)
-    
 
     @external
     def add_burner(self, _burner: Address) -> None:
@@ -127,7 +126,7 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
         self._burn(self.msg.sender, _amount, _data)
 
     @external
-    def transfer(self, _to: Address, _value: int, _data: bytes = b'None'):
+    def transfer(self, _from: Address, _to: Address, _value: int, _data: bytes = b'None'):
         self._transfer(self.msg.sender, _to, _value, _data)
 
     # ================================================================================================
@@ -138,11 +137,11 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
     def Transfer(self, _from: Address, _to: Address, _value: int, _data: bytes):
         pass
 
-    @eventlog(indexed=3)
+    @eventlog(indexed=2)
     def Mint(self, _to: Address, amount: int, _data: bytes):
         pass
 
-    @eventlog(indexed=3)
+    @eventlog(indexed=2)
     def Burn(self, _from: Address, _amount: int, _data: bytes):
         pass
 
