@@ -76,11 +76,14 @@ class Reviews(IconScoreBase):
         review.remove()
 
     @external()
-    def remove_reviews(self, guids):
+    def remove_reviews(self, guids: str):
         """
         Removes specified reviews and withdraw funds from staking contract.
+        Takes a string of comma separated guids.
         """
-        for guid in guids:
+        guids_strings = guids.split(",")
+        guids_ints = [int(s) for s in guids_strings]
+        for guid in guids_ints:
             self.remove_review(guid)
 
     @external()
