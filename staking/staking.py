@@ -2,7 +2,8 @@ from iconservice import (
     IconScoreBase,
     IconScoreDatabase,
     ArrayDB,
-    VarDB, 
+    VarDB,
+    DictDB,
     payable,
     Address, 
     external, 
@@ -21,17 +22,25 @@ from .interfaces.system_score import SystemScoreInterface
 from .scorelib.constants import Score, Prep
 from .scorelib.linked_list import LinkedListDB
 
-from .utils import iscore_to_loop, floor
-
+from .utils import iscore_to_loop, floor, compute_rscore_reward_rate
 TAG = 'Staking'
 
 class Staking(IconScoreBase):
 
     def __init__(self, db: IconScoreDatabase) -> None:
         super().__init__(db)
+
+        # Handle icx staking rewards.
         self._reward_rates = ArrayDB("_reward_rates", db, value_type=str)
         self._payout_queue = LinkedListDB("_payout_queue", db, value_type=str)
         
+        # Token reward distribution.
+        self._total_loop_reviews = VarDB("_total_loop_reviews", db, value_type=int)
+        self._sum_reward_rates = VarDB("_sum_reward_rates", db, value_type=int)
+        self._sum_reward_rates_on_entry = DictDB("_sum_reward_rate_on_entry", db, value_type=int)
+        self._staked_loop = DictDB("_staked_loop", db, value_type=int)
+
+        # Score addresses.
         self._review_score = VarDB("_review_score", db, value_type=Address)
         self._system_score = IconScoreBase.create_interface_score(Score.system, SystemScoreInterface)
 
@@ -54,10 +63,20 @@ class Staking(IconScoreBase):
     # ============================ Fund handling =====================================
 
     @external
-    def deposit_funds(self, value: int):
+    def deposit_funds(self, reviewer: Address, value: int):
         self._only_review_contract()
+        self._total_loop_reviews.set(self._total_loop_reviews.get() + value)
+        self._staked_loop[reviewer] += value
+        self._sum_reward_rates_on_entry = self._sum_reward_rates.get()
         self._increment_funds(value)
 
+    @external
+    def distribute_tokens(self, amount: int):
+        if self._total_loop_reviews.get() != 0:
+            self._sum_reward_rates.set(self._sum_reward_rates.get() + compute_rscore_reward_rate(amount, self._total_loop_reviews.get()))
+        else:
+            revert("There are no funds locked up in reviews.")
+           
     @external
     def withdraw_funds(self, reviewer: Address, amount: int, submission: int, expiration: int):
         self._only_review_contract()
