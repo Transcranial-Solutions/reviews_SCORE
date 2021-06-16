@@ -14,56 +14,56 @@ DIR_PATH = os.path.abspath(os.path.dirname(__file__))
 STAKING_SCORE_INSTALL_ADDRESS = "cx1000000000000000000000000000000000000000"
 
 
-#class TestTest(IconIntegrateTestBase):
-#    TEST_HTTP_ENDPOINT_URI_V3 = "http://127.0.0.1:9000/api/v3"
-#    SCORE_PROJECT = os.path.abspath(os.path.join(DIR_PATH, ".."))
-#
-#    def setUp(self):
-#        super().setUp()
-#
-#        # WARNING: ICON service emulation is not working with IISS.
-#        # You can stake and delegate but can't get any I-Score for reward.
-#        # If you want to test IISS stuff correctly, set self.icon_service and send requests to the network
-#        self.icon_service = None
-#
-#        # If you want to send requests to the network, uncomment next line and set self.TEST_HTTP_ENDPOINT_URI_V3
-#        # self.icon_service = IconService(HTTPProvider(self.TEST_HTTP_ENDPOINT_URI_V3))
-#
-#        # install SCORE
-#
-#        self._review_score_address = self._deploy_score()["scoreAddress"]
-#        self._staking_score_address = self._deploy_staking_score()["scoreAddress"]
-#        self._test_guid = uuid.uuid4().int
-#        self._message = r"People always ask me about transcranial solutions, It's fantastic. Let me tell you about transcranial solutions. I do very well with transcranial solutions. I love transcranial solutions. No one loves transcranial solutions more than me, BELIEVE ME. transcranial solutions loves me. We're going to have so many transcranial solutions you are going to get sick of transcranial solutions. The transcranial solutions just got 10 feet higher. I have the best transcranial solutions."
-#        self._review_score = 5
-#        self._expiration = 10
-#        self._prep = "hx2f3fb9a9ff98df2145936d2bfcaa3837a289496b"
-#        self._set_staking_score()
-#
-#    def _deploy_score(self, to: str = SCORE_INSTALL_ADDRESS) -> dict:
-#        # Generates an instance of transaction for deploying SCORE.
-#        transaction = (
-#            DeployTransactionBuilder()
-#            .from_(self._test1.get_address())
-#            .to(to)
-#            .step_limit(100_000_000_000)
-#            .nid(3)
-#            .nonce(100)
-#            .content_type("application/zip")
-#            .content(gen_deploy_data_content(self.SCORE_PROJECT))
-#            .build()
-#        )
-#
-#        # Returns the signed transaction object having a signature
-#        signed_transaction = SignedTransaction(transaction, self._test1)
-#
-#        # process the transaction in local
-#        tx_result = self.process_transaction(signed_transaction, self.icon_service)
-#
-#        self.assertEqual(True, tx_result["status"])
-#        self.assertTrue("scoreAddress" in tx_result)
-#
-#        return tx_result
+class TestTest(IconIntegrateTestBase):
+    TEST_HTTP_ENDPOINT_URI_V3 = "http://127.0.0.1:9000/api/v3"
+    SCORE_PROJECT = os.path.abspath(os.path.join(DIR_PATH, ".."))
+
+    def setUp(self):
+        super().setUp()
+
+        # WARNING: ICON service emulation is not working with IISS.
+        # You can stake and delegate but can't get any I-Score for reward.
+        # If you want to test IISS stuff correctly, set self.icon_service and send requests to the network
+        self.icon_service = None
+
+        # If you want to send requests to the network, uncomment next line and set self.TEST_HTTP_ENDPOINT_URI_V3
+        # self.icon_service = IconService(HTTPProvider(self.TEST_HTTP_ENDPOINT_URI_V3))
+
+        # install SCORE
+
+        self._review_score_address = self._deploy_score()["scoreAddress"]
+        #self._staking_score_address = self._deploy_staking_score()["scoreAddress"]
+        self._test_guid = uuid.uuid4().int
+        self._message = r"People always ask me about transcranial solutions, It's fantastic. Let me tell you about transcranial solutions. I do very well with transcranial solutions. I love transcranial solutions. No one loves transcranial solutions more than me, BELIEVE ME. transcranial solutions loves me. We're going to have so many transcranial solutions you are going to get sick of transcranial solutions. The transcranial solutions just got 10 feet higher. I have the best transcranial solutions."
+        self._review_score = 5
+        self._expiration = 10
+        self._prep = "hx2f3fb9a9ff98df2145936d2bfcaa3837a289496b"
+        #self._set_staking_score()
+
+    def _deploy_score(self, to: str = SCORE_INSTALL_ADDRESS) -> dict:
+        # Generates an instance of transaction for deploying SCORE.
+        transaction = (
+            DeployTransactionBuilder()
+            .from_(self._test1.get_address())
+            .to(to)
+            .step_limit(100_000_000_000)
+            .nid(3)
+            .nonce(100)
+            .content_type("application/zip")
+            .content(gen_deploy_data_content(self.SCORE_PROJECT))
+            .build()
+        )
+
+        # Returns the signed transaction object having a signature
+        signed_transaction = SignedTransaction(transaction, self._test1)
+
+        # process the transaction in local
+        tx_result = self.process_transaction(signed_transaction, self.icon_service)
+
+        self.assertEqual(True, tx_result["status"])
+        self.assertTrue("scoreAddress" in tx_result)
+
+        return tx_result
 #
 #    def _deploy_staking_score(self, to: str = SCORE_INSTALL_ADDRESS) -> dict:
 #        staking_dir = os.path.abspath(os.path.join(DIR_PATH, "../../staking"))
