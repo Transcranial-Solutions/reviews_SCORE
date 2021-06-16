@@ -81,9 +81,8 @@ class Reviews(IconScoreBase):
         Removes specified reviews and withdraw funds from staking contract.
         Takes a string of comma separated guids.
         """
-        guids_strings = guids.split(",")
-        guids_ints = [int(s) for s in guids_strings]
-        for guid in guids_ints:
+        guids = json_loads(guids)
+        for guid in guids:
             self.remove_review(guid)
 
     @external()
