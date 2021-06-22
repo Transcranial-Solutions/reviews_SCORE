@@ -1,26 +1,9 @@
-from iconservice import (
-    IconScoreBase,
-    IconScoreDatabase,
-    ArrayDB,
-    VarDB,
-    DictDB,
-    payable,
-    Address, 
-    external, 
-    json_dumps, 
-    json_loads, 
-    revert, 
-    sha3_256, 
-    sha_256, 
-    create_address_with_key, 
-    recover_key,
-    ZERO_SCORE_ADDRESS
-)
-
+from iconservice import *
 from .interfaces.system_score import SystemScoreInterface
 
 from .scorelib.constants import Score, Prep
 from .scorelib.linked_list import LinkedListDB
+from .scorelib.reward_handler import RewardHandler
 
 from .utils import iscore_to_loop, floor, compute_rscore_reward_rate
 TAG = 'Staking'
@@ -36,9 +19,8 @@ class Staking(IconScoreBase):
         
         # Token reward distribution.
         self._total_loop_reviews = VarDB("_total_loop_reviews", db, value_type=int)
-        self._sum_reward_rates = VarDB("_sum_reward_rates", db, value_type=int)
-        self._sum_reward_rates_on_entry = DictDB("_sum_reward_rate_on_entry", db, value_type=int)
-        self._staked_loop = DictDB("_staked_loop", db, value_type=int)
+        self._loop_per_address = DictDB("_staked_loop", db, value_type=int)
+        self._rewards_tracker = RewardHandler("_reward_tracker", db, self)
 
         # Score addresses.
         self._review_score = VarDB("_review_score", db, value_type=Address)
@@ -63,23 +45,30 @@ class Staking(IconScoreBase):
     # ============================ Fund handling =====================================
 
     @external
-    def deposit_funds(self, reviewer: Address, value: int):
+    def deposit_funds(self, reviewer: Address, amount: int):
         self._only_review_contract()
-        self._total_loop_reviews.set(self._total_loop_reviews.get() + value)
-        self._staked_loop[reviewer] += value
-        self._sum_reward_rates_on_entry = self._sum_reward_rates.get()
-        self._increment_funds(value)
+        self._rewards_tracker.update_rewards(reviewer, self._loop_per_address[reviewer])
+        self._total_loop_reviews.set(self._total_loop_reviews.get() + amount)
+        self._loop_per_address[reviewer] += amount
+        self._increment_funds(amount)
 
     @external
     def distribute_tokens(self, amount: int):
-        if self._total_loop_reviews.get() != 0:
-            self._sum_reward_rates.set(self._sum_reward_rates.get() + compute_rscore_reward_rate(amount, self._total_loop_reviews.get()))
-        else:
-            revert("There are no funds locked up in reviews.")
-           
+        self._rewards_tracker.distribute_rewards(amount, self._total_loop_reviews.get())
+
+    @external
+    def claim_rewards(self):
+        sender = self.msg.sender
+        rewards = self._rewards_tracker.claim_rewards(sender, self._loop_per_address[sender])
+        # contract call to mint function in transcranial token contract.
+
+              
     @external
     def withdraw_funds(self, reviewer: Address, amount: int, submission: int, expiration: int):
         self._only_review_contract()
+        self._rewards_tracker.update_rewards(reviewer, self._loop_per_address[reviewer])
+        self._total_loop_reviews.set(self._total_loop_reviews.get() - amount)
+        self._loop_per_address[reviewer] -= amount
         payout_amount = amount + self._compute_rewards(amount, submission, expiration)
         self._decrement_funds(payout_amount)
         self._payout_queue.append(json_dumps({'address': str(reviewer), 'amount': payout_amount}))
@@ -177,13 +166,13 @@ class Staking(IconScoreBase):
             
         return int(total_rewards) # int rounds down.
 
-    def _increment_funds(self, value: int):
-        new_amount = self._system_score.getDelegation(self.address)['totalDelegated'] + value
+    def _increment_funds(self, amount: int):
+        new_amount = self._system_score.getDelegation(self.address)['totalDelegated'] + amount
         self._system_score.setStake(new_amount)
         self._system_score.setDelegation(self._create_delegation(new_amount))
 
-    def _decrement_funds(self, value: int):
-        new_amount = self._system_score.getDelegation(self.address)['totalDelegated'] - value
+    def _decrement_funds(self, amount: int):
+        new_amount = self._system_score.getDelegation(self.address)['totalDelegated'] - amount
         self._system_score.setDelegation(self._create_delegation(new_amount))
         self._system_score.setStake(new_amount)
 
