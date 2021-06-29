@@ -40,7 +40,7 @@ class Reviews(IconScoreBase):
         self._admin.set(address)
 
     @external(readonly=True)
-    def get_admin(self, address: Address) -> Address:
+    def get_admin(self) -> Address:
         return self._admin.get()
     
     @only_admin
