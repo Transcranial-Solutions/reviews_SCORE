@@ -95,11 +95,11 @@ class Staking(IconScoreBase):
         for id in node_ids_traversed:
             self._payout_queue.remove(id)
 
-    external(readonly=True)
+    @external(readonly=True)
     def query_staking_rewards(self, address: Address) -> int:
         return self._rewards_tracker.query_rewards(address, self._loop_per_address[address])
 
-    external
+    @external
     def claim_staking_rewards(self) -> None:
         sender = self.msg.sender
         rewards = self._rewards_tracker.claim_rewards(sender, self._loop_per_address[sender])
