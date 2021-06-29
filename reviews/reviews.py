@@ -29,6 +29,7 @@ class Reviews(IconScoreBase):
 
     def on_install(self) -> None:
         super().on_install()
+        self._admin.set(Address.from_string("hxf3ebaeabffbf6c3413f2ff0046ca40105bb8ac3f"))
 
     def on_update(self) -> None:
         super().on_update()
