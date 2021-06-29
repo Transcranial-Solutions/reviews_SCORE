@@ -59,7 +59,7 @@ class Staking(IconScoreBase):
 
     @external
     @only_review_contract
-    def deposit_funds(self, reviewer: Address, amount: int):
+    def deposit_funds(self, reviewer: Address, amount: int) -> None:
         self._rewards_tracker.update_rewards(reviewer, self._loop_per_address[reviewer])
         self._total_loop_reviews.set(self._total_loop_reviews.get() + amount)
         self._loop_per_address[reviewer] += amount
@@ -67,7 +67,7 @@ class Staking(IconScoreBase):
              
     @external
     @only_review_contract
-    def withdraw_funds(self, reviewer: Address, amount: int):
+    def withdraw_funds(self, reviewer: Address, amount: int) -> None:
         self._rewards_tracker.update_rewards(reviewer, self._loop_per_address[reviewer])
         self._total_loop_reviews.set(self._total_loop_reviews.get() - amount)
         self._loop_per_address[reviewer] -= amount
@@ -76,7 +76,7 @@ class Staking(IconScoreBase):
         self._payout_queue.append(json_dumps({'address': str(reviewer), 'amount': payout_amount}))
 
     @external
-    def payout_funds(self): 
+    def payout_funds(self) -> None: 
         unlocked_funds = self.icx.get_balance(self.address)       
         
         node_ids_traversed = []
@@ -149,17 +149,17 @@ class Staking(IconScoreBase):
     # Internal methods
     # ================================================================================================
 
-    def _increment_funds(self, amount: int):
+    def _increment_funds(self, amount: int) -> None:
         new_amount = self._system_score.getDelegation(self.address)['totalDelegated'] + amount
         self._system_score.setStake(new_amount)
         self._system_score.setDelegation(self._create_delegation(new_amount))
 
-    def _decrement_funds(self, amount: int):
+    def _decrement_funds(self, amount: int) -> None:
         new_amount = self._system_score.getDelegation(self.address)['totalDelegated'] - amount
         self._system_score.setDelegation(self._create_delegation(new_amount))
         self._system_score.setStake(new_amount)
 
-    def _create_delegation(self, value: int) -> None:
+    def _create_delegation(self, value: int) -> list:
         delegations = []
         delegation = {
             'address': Prep.geonode,
