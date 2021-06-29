@@ -24,10 +24,7 @@ class Staking(IconScoreBase):
         self._rewards_tracker = RewardHandler("staking", db, self)
         self._payout_queue = LinkedListDB("icx_payout", db, str)
 
-        # Voting.
         self._prep_vote = VarDB("prep_vote", db, Address)
-
-        # Access.
         self._admin = VarDB("admin", db, Address)
 
         # Score addresses.
