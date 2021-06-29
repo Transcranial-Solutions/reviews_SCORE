@@ -1,11 +1,14 @@
 from iconservice import *
+
 from .interfaces.system_score import SystemScoreInterface
 
 from .scorelib.constants import Score, Prep
 from .scorelib.linked_list import LinkedListDB
 from .scorelib.reward_handler import RewardHandler
 
-from .utils import iscore_to_loop, floor, compute_rscore_reward_rate
+from .utils.utils import iscore_to_loop, floor, compute_rscore_reward_rate
+from .utils.checks import only_admin, only_owner, only_review_contract
+
 TAG = 'Staking'
 
 class Staking(IconScoreBase):
@@ -14,16 +17,16 @@ class Staking(IconScoreBase):
         super().__init__(db)
 
         # Handle icx staking rewards.
-        self._reward_rates = ArrayDB("_reward_rates", db, value_type=str)
-        self._payout_queue = LinkedListDB("_payout_queue", db, value_type=str)
+        self._reward_rates = ArrayDB("_reward_rates", db, str)
+        self._payout_queue = LinkedListDB("_payout_queue", db, str)
         
         # Token reward distribution.
-        self._total_loop_reviews = VarDB("_total_loop_reviews", db, value_type=int)
-        self._loop_per_address = DictDB("_staked_loop", db, value_type=int)
+        self._total_loop_reviews = VarDB("_total_loop_reviews", db, int)
+        self._loop_per_address = DictDB("_staked_loop", db, int)
         self._rewards_tracker = RewardHandler("_reward_tracker", db, self)
 
         # Score addresses.
-        self._review_score = VarDB("_review_score", db, value_type=Address)
+        self._review_score = VarDB("_review_score", db, Address)
         self._system_score = IconScoreBase.create_interface_score(Score.system, SystemScoreInterface)
 
     def on_install(self) -> None:
@@ -32,9 +35,8 @@ class Staking(IconScoreBase):
     def on_update(self) -> None:
         super().on_update()
 
-    # ============================= Settings =====================================
-
     @external
+    @only_admin
     def set_review_score(self, score: Address) -> None:
         self._review_score.set(score)
 
@@ -42,11 +44,9 @@ class Staking(IconScoreBase):
     def get_review_score(self) -> Address:
         return self._review_score.get()
 
-    # ============================ Fund handling =====================================
-
     @external
+    @only_review_contract
     def deposit_funds(self, reviewer: Address, amount: int):
-        self._only_review_contract()
         self._rewards_tracker.update_rewards(reviewer, self._loop_per_address[reviewer])
         self._total_loop_reviews.set(self._total_loop_reviews.get() + amount)
         self._loop_per_address[reviewer] += amount
@@ -64,8 +64,8 @@ class Staking(IconScoreBase):
 
               
     @external
+    @only_review_contract
     def withdraw_funds(self, reviewer: Address, amount: int, submission: int, expiration: int):
-        self._only_review_contract()
         self._rewards_tracker.update_rewards(reviewer, self._loop_per_address[reviewer])
         self._total_loop_reviews.set(self._total_loop_reviews.get() - amount)
         self._loop_per_address[reviewer] -= amount
