@@ -13,6 +13,7 @@ def only_admin(func):
 		return func(self, *args, **kwargs)
 	return __wrapper
 
+
 def only_owner(func):
 	if not isfunction(func):
 		revert(f"NotAFunctionError")
@@ -24,6 +25,7 @@ def only_owner(func):
 
 		return func(self, *args, **kwargs)
 	return __wrapper
+
 
 def only_review_contract(func):
 	if not isfunction(func):

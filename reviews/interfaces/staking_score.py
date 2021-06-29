@@ -7,5 +7,5 @@ class StakingScoreInterface(InterfaceScore):
         pass
 
     @interface
-    def withdraw_funds(self, reviewer: Address, amount: int, submission: int, expiration: int):
+    def withdraw_funds(self, reviewer: Address, amount: int):
         pass
