@@ -171,7 +171,12 @@ class Staking(IconScoreBase):
     def _only_review_contract(self) -> None:
         if not self.msg.sender == self._review_score.get():
             revert('This method is can only be called by the review contract.')
-        
+
+    @external
+    @only_admin  
+    def distribute_icx(self, amount: int) -> None:
+        self._rewards_tracker.distribute_rewards(amount, self._total_loop_reviews.get())
+
     @payable
     def fallback(self):
         pass
