@@ -179,6 +179,10 @@ class Staking(IconScoreBase):
     def distribute_icx(self) -> None:
         self._rewards_tracker.distribute_rewards(self.msg.value, self._total_loop_reviews.get())
 
+    @external(readonly=True)
+    def print_rscore(self, address: Address) -> int:
+        return self._rewards_tracker._rewards[address]
+
     @payable
     def fallback(self):
         pass
