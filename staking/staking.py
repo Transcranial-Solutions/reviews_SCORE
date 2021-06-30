@@ -38,6 +38,7 @@ class Staking(IconScoreBase):
 
     def on_update(self) -> None:
         super().on_update()
+        self._rewards_tracker._reward_rate.set(0)
 
     @external
     @only_owner
