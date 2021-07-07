@@ -20,7 +20,7 @@ def only_owner(func):
 	@wraps(func)
 	def __wrapper(self: object, *args, **kwargs):
 		if self.msg.sender != self.owner:
-			revert("Only owner can call this function.")
+			revert("Onlygit stat owner can call this function.")
 
 		return func(self, *args, **kwargs)
 	return __wrapper
