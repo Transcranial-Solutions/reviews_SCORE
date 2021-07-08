@@ -3,6 +3,7 @@ from iconservice import *
 from .token_standards import IRC2TokenStandard
 from .interfaces.tokenfallback import TokenFallbackInterface
 from .scorelib.bag import BagDB
+from .utils.checks import only_admin, only_owner, only_burners, only_minters
 
 class TranscranialToken(IconScoreBase, IRC2TokenStandard):
 
@@ -70,9 +71,8 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
         return self._admin.get()
 
     @external
+    @only_owner
     def set_admin(self, _address: Address) -> None:
-        if self.msg.sender != self.owner:
-            revert("Only owner can set admin.")
         self._admin.set(_address)
 
     @external(readonly=True)
@@ -83,9 +83,8 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
         return minters
     
     @external
+    @only_admin
     def add_minter(self, _minter: Address) -> None:
-        if self.msg.sender != self._admin.get():
-            revert("Only admin can assign minters.")
         self._minters.add(_minter)
 
     @external(readonly=True)
@@ -96,33 +95,28 @@ class TranscranialToken(IconScoreBase, IRC2TokenStandard):
         return burners
 
     @external
+    @only_admin
     def remove_minter(self, _minter: Address) -> None:
-        if self.msg.sender != self._admin.get():
-            revert("Only admin can remove minters.")
         self._burners.remove(_minter)
 
     @external
+    @only_admin
     def add_burner(self, _burner: Address) -> None:
-        if self.msg.sender != self._admin.get():
-            revert("Only admin can assign minters.")
         self._burners.add(_burner)
 
     @external
+    @only_admin
     def remove_burner(self, _burner: Address) -> None:
-        if self.msg.sender != self._admin.get():
-            revert("Only admin can remove minters.")
         self._burners.remove(_burner)
 
     @external
+    @only_minters
     def mint(self, _to: Address, _amount: int, _data: bytes = b'None'):
-        if not self.msg.sender in self._minters:
-            revert("Only minters can mint tokens.")
         self._mint(_to, _amount, _data)
     
     @external
+    @only_burners
     def burn(self, _from: Address, _amount: int, _data: bytes = b'None'):
-        if not self.msg.sender in self._burners:
-            revert("Only burners can burn tokens.")
         self._burn(self.msg.sender, _amount, _data)
 
     @external

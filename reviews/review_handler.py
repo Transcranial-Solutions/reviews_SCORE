@@ -1,4 +1,12 @@
-from iconservice import IconScoreBase, IconScoreDatabase, VarDB, Address, json_dumps, revert
+from iconservice import (
+    IconScoreBase, 
+    IconScoreDatabase, 
+    VarDB, 
+    Address, 
+    json_dumps, 
+    revert
+)
+
 from .scorelib.bag import BagDB
 
 

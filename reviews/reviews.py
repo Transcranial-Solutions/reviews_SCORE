@@ -12,10 +12,11 @@ from iconservice import (
     json_dumps,
     sha3_256,
     create_address_with_key,
-    recover_key,
+    recover_key
 )
 from .review_handler import ReviewHandler
 from .interfaces.staking_score import StakingScoreInterface
+from .utils.checks import only_admin, only_owner
 
 TAG = "Reviews"
 
@@ -23,16 +24,27 @@ class Reviews(IconScoreBase):
     def __init__(self, db: IconScoreDatabase) -> None:
         super().__init__(db)
         self._review_handler = ReviewHandler("review_handler", db, self)
-        self._staking_score = VarDB("staking_score", db, value_type=Address)
+        self._staking_score = VarDB("staking_score", db, Address)
+        self._admin = VarDB("admin", db, Address)
 
     def on_install(self) -> None:
         super().on_install()
+        self._admin.set(Address.from_string("hxf3ebaeabffbf6c3413f2ff0046ca40105bb8ac3f"))
 
     def on_update(self) -> None:
         super().on_update()
 
-    # ========  Settings ========
-    @external()
+    @external
+    @only_owner
+    def set_admin(self, address: Address) -> None:
+        self._admin.set(address)
+
+    @external(readonly=True)
+    def get_admin(self) -> Address:
+        return self._admin.get()
+    
+    @only_admin
+    @external
     def set_staking_score(self, score: Address) -> None:
         self._staking_score.set(score)
 
@@ -40,10 +52,8 @@ class Reviews(IconScoreBase):
     def get_staking_score(self) -> Address:
         return self._staking_score.get()
 
-    # =========  Reviews  =========
-
     @payable
-    @external()
+    @external
     def submit_review(self, guid: int, hash: str, expiration: int) -> None:
         """
         Submit a review. Transfer funds to staking contract.
@@ -53,9 +63,9 @@ class Reviews(IconScoreBase):
         )
         self.icx.transfer(self._staking_score.get(), self.msg.value)
         staking_score = self.create_interface_score(self._staking_score.get(), StakingScoreInterface)
-        staking_score.deposit_funds(self.msg.value)
+        staking_score.deposit_funds(self.msg.sender, self.msg.value)
 
-    @external()
+    @external
     def remove_review(self, guid: int) -> None:
         """
         Remove a review. Withdraw funds from staking contract.
@@ -72,22 +82,18 @@ class Reviews(IconScoreBase):
             )
 
         staking_score = self.create_interface_score(self._staking_score.get(), StakingScoreInterface)
-        staking_score.withdraw_funds(review.reviewer, review.stake, review.submission, review.expiration)
+        staking_score.withdraw_funds(review.reviewer, review.stake)
         review.remove()
 
-    @external()
+    @external
     def remove_reviews(self, guids: str):
         """
         Removes specified reviews and withdraw funds from staking contract.
-        Takes a string of comma separated guids.
+        Takes a json string array as input.
         """
         guids = json_loads(guids)
         for guid in guids:
             self.remove_review(guid)
-
-    @external()
-    def edit_review(self):
-        pass
 
     @external(readonly=True)
     def authenticate_review(
@@ -127,8 +133,6 @@ class Reviews(IconScoreBase):
     @external(readonly=True)
     def get_current_timestamp(self) -> int:
         return self.now()
-
-    # ========  Helpers =========
 
     def _compute_review_hash(
         self,

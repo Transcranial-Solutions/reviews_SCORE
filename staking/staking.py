@@ -1,49 +1,55 @@
-from iconservice import (
-    IconScoreBase,
-    IconScoreDatabase,
-    ArrayDB,
-    VarDB, 
-    payable,
-    Address, 
-    external, 
-    json_dumps, 
-    json_loads, 
-    revert, 
-    sha3_256, 
-    sha_256, 
-    create_address_with_key, 
-    recover_key,
-    ZERO_SCORE_ADDRESS
-)
+from iconservice import *
 
 from .interfaces.system_score import SystemScoreInterface
 
 from .scorelib.constants import Score, Prep
 from .scorelib.linked_list import LinkedListDB
+from .scorelib.reward_handler import RewardHandler
 
-from .utils import iscore_to_loop, floor
+from .utils.utils import iscore_to_loop, floor, compute_rscore_reward_rate
+from .utils.checks import only_admin, only_owner, only_review_contract
+
 
 TAG = 'Staking'
+
 
 class Staking(IconScoreBase):
 
     def __init__(self, db: IconScoreDatabase) -> None:
         super().__init__(db)
-        self._reward_rates = ArrayDB("_reward_rates", db, value_type=str)
-        self._payout_queue = LinkedListDB("_payout_queue", db, value_type=str)
-        
-        self._review_score = VarDB("_review_score", db, value_type=Address)
+
+        # Handle icx staking rewards.
+        self._total_loop_reviews = VarDB("total_loop_reviews", db, int)
+        self._loop_per_address = DictDB("staked_loop", db, int)
+        self._rewards_tracker = RewardHandler("staking", db, self)
+        self._payout_queue = LinkedListDB("icx_payout", db, str)
+
+        self._prep_vote = VarDB("prep_vote", db, Address)
+        self._admin = VarDB("admin", db, Address)
+
+        # Score addresses.
+        self._review_score = VarDB("review_score", db, Address)
         self._system_score = IconScoreBase.create_interface_score(Score.system, SystemScoreInterface)
 
     def on_install(self) -> None:
         super().on_install()
+        self._prep_vote.set(Prep.geonode)
+        self._admin.set(Address.from_string("hxf3ebaeabffbf6c3413f2ff0046ca40105bb8ac3f"))
 
     def on_update(self) -> None:
         super().on_update()
 
-    # ============================= Settings =====================================
+    @external
+    @only_owner
+    def set_admin(self, address: Address) -> None:
+        self._admin.set(address)
+
+    @external(readonly=True)
+    def get_admin(self) -> Address:
+        return self._admin.get()
 
     @external
+    @only_admin
     def set_review_score(self, score: Address) -> None:
         self._review_score.set(score)
 
@@ -51,22 +57,26 @@ class Staking(IconScoreBase):
     def get_review_score(self) -> Address:
         return self._review_score.get()
 
-    # ============================ Fund handling =====================================
-
     @external
-    def deposit_funds(self, value: int):
-        self._only_review_contract()
-        self._increment_funds(value)
-
+    @only_review_contract
+    def deposit_funds(self, reviewer: Address, amount: int) -> None:
+        self._rewards_tracker.update_rewards(reviewer, self._loop_per_address[reviewer])
+        self._total_loop_reviews.set(self._total_loop_reviews.get() + amount)
+        self._loop_per_address[reviewer] += amount
+        self._increment_funds(amount)
+             
     @external
-    def withdraw_funds(self, reviewer: Address, amount: int, submission: int, expiration: int):
-        self._only_review_contract()
-        payout_amount = amount + self._compute_rewards(amount, submission, expiration)
+    @only_review_contract
+    def withdraw_funds(self, reviewer: Address, amount: int) -> None:
+        self._rewards_tracker.update_rewards(reviewer, self._loop_per_address[reviewer])
+        self._total_loop_reviews.set(self._total_loop_reviews.get() - amount)
+        self._loop_per_address[reviewer] -= amount
+        payout_amount = amount + self._rewards_tracker.claim_rewards(reviewer, amount)
         self._decrement_funds(payout_amount)
         self._payout_queue.append(json_dumps({'address': str(reviewer), 'amount': payout_amount}))
 
     @external
-    def payout_funds(self): 
+    def payout_funds(self) -> None: 
         unlocked_funds = self.icx.get_balance(self.address)       
         
         node_ids_traversed = []
@@ -85,6 +95,16 @@ class Staking(IconScoreBase):
         for id in node_ids_traversed:
             self._payout_queue.remove(id)
 
+    @external(readonly=True)
+    def query_staking_rewards(self, address: Address) -> int:
+        return self._rewards_tracker.query_rewards(address, self._loop_per_address[address])
+
+    @external
+    def claim_staking_rewards(self) -> None:
+        sender = self.msg.sender
+        rewards = self._rewards_tracker.claim_rewards(sender, self._loop_per_address[sender])
+        self.icx.transfer(sender, rewards)
+
     @external
     def claim_iscore(self) -> None:
         iscore = self._system_score.queryIScore(self.address)['iscore']
@@ -96,11 +116,10 @@ class Staking(IconScoreBase):
         loop_claimed = iscore_to_loop(iscore)
 
         # Restake and redelegate new amounts.
-        self._increment_funds(loop_claimed)
+        #self._increment_funds(loop_claimed)
 
-        # Compute and add reward rate.
-        reward_rate = self._compute_reward_rate(loop_claimed)
-        self._add_reward_rate(reward_rate)
+        # Distribute rewards.
+        self._rewards_tracker.distribute_rewards(loop_claimed, self._total_loop_reviews.get())
 
     @external(readonly=True)
     def queryIscore(self) -> dict:
@@ -126,49 +145,21 @@ class Staking(IconScoreBase):
     def get_total_staked(self) -> int:
         return self._system_score.getStake(self.address)['stake']
 
-    @external(readonly=True)
-    def get_rewards_rates(self) -> list:
-        reward_rates = []
-        for reward_rate in self._reward_rates:
-            reward_rates.append(json_loads(reward_rate))
-        return reward_rates
-
     # ================================================================================================
     # Internal methods
     # ================================================================================================
 
-    def _compute_reward_rate(self, loop: int) -> float:
-        return floor(loop / self._system_score.getDelegation(self.address)['totalDelegated'], 18) 
-
-    def _add_reward_rate(self, reward_rate: float) -> None:
-        reward_rate = {
-            'timestamp': self.now(),
-            'reward_rate': reward_rate 
-        }
-        self._reward_rates.put(json_dumps(reward_rate))
-
-    def _compute_rewards(self, value: int, submission_timestamp: int, expiration_timestamp: int) -> int:
-        total_rewards = 0
-        for reward_rate in self._reward_rates:
-            reward_rate = json_loads(reward_rate)
-            timestamp = reward_rate['timestamp']
-
-            if submission_timestamp < timestamp < expiration_timestamp:
-                total_rewards += reward_rate['reward_rate'] * (value + total_rewards)
-            
-        return int(total_rewards) # int rounds down.
-
-    def _increment_funds(self, value: int):
-        new_amount = self._system_score.getDelegation(self.address)['totalDelegated'] + value
+    def _increment_funds(self, amount: int) -> None:
+        new_amount = self._system_score.getDelegation(self.address)['totalDelegated'] + amount
         self._system_score.setStake(new_amount)
         self._system_score.setDelegation(self._create_delegation(new_amount))
 
-    def _decrement_funds(self, value: int):
-        new_amount = self._system_score.getDelegation(self.address)['totalDelegated'] - value
+    def _decrement_funds(self, amount: int) -> None:
+        new_amount = self._system_score.getDelegation(self.address)['totalDelegated'] - amount
         self._system_score.setDelegation(self._create_delegation(new_amount))
         self._system_score.setStake(new_amount)
 
-    def _create_delegation(self, value: int) -> None:
+    def _create_delegation(self, value: int) -> list:
         delegations = []
         delegation = {
             'address': Prep.geonode,
@@ -180,7 +171,17 @@ class Staking(IconScoreBase):
     def _only_review_contract(self) -> None:
         if not self.msg.sender == self._review_score.get():
             revert('This method is can only be called by the review contract.')
-        
+
+    @external
+    @payable
+    @only_admin  
+    def distribute_icx(self) -> None:
+        self._rewards_tracker.distribute_rewards(self.msg.value, self._total_loop_reviews.get())
+
+    @external(readonly=True)
+    def print_rscore(self, address: Address) -> int:
+        return self._rewards_tracker._rewards[address]
+
     @payable
     def fallback(self):
         pass
