@@ -12,7 +12,8 @@ from iconservice import (
     json_dumps,
     sha3_256,
     create_address_with_key,
-    recover_key
+    recover_key,
+    List
 )
 from .review_handler import ReviewHandler
 from .interfaces.staking_score import StakingScoreInterface
