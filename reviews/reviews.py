@@ -156,3 +156,12 @@ class Reviews(IconScoreBase):
             "utf-8",
         )
         return sha_256(byte_data).hex()
+
+    @external
+    def setRoute(self, _fromToken: Address, _toToken: Address, _path: List[Address]) -> None:
+
+        path_str = []
+        for adr in _path:
+            path_str.append(str(adr))
+   
+        hej = json_dumps(path_str)
